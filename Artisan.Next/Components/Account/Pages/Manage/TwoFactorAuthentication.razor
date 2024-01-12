@@ -1,0 +1,105 @@
+﻿@page "/Account/Manage/TwoFactorAuthentication"
+@using Artisan.Next.Data.Entities
+@using Microsoft.AspNetCore.Http.Features
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Двухфакторная аутентификация (2FA)</PageTitle>
+
+<StatusMessage/>
+<h3>Двухфакторная аутентификация (2FA)</h3>
+@if (_canTrack)
+{
+    if (_is2FaEnabled)
+    {
+        switch (_recoveryCodesLeft)
+        {
+            case 0:
+                <div class="alert alert-danger">
+                    <strong>У вас не осталось кодов восстановления.</strong>
+                    <p>Вам нужно <a class="link-info" href="Account/Manage/GenerateRecoveryCodes">создать новые коды восстановления</a> чтобы авторизовываться через них.</p>
+                </div>
+                break;
+            case 1:
+                <div class="alert alert-danger">
+                    <strong>У вас остался последний код восстановления.</strong>
+                    <p>Вам следует <a class="link-info" href="Account/Manage/GenerateRecoveryCodes">сгенерироваться новые коды</a>.</p>
+                </div>
+                break;
+            case <= 3:
+                <div class="alert alert-warning">
+                    <strong>У вас осталось мало кодов восстановления (@_recoveryCodesLeft).</strong>
+                    <p>Вам следует <a class="link-info" href="Account/Manage/GenerateRecoveryCodes">сгенерироваться новые коды</a>.</p>
+                </div>
+                break;
+        }
+
+        if (_isMachineRemembered)
+        {
+            <form style="display: inline-block" @formname="forget-browser" @onsubmit="OnSubmitForgetBrowserAsync" method="post">
+                <AntiforgeryToken/>
+                <button type="submit" class="btn btn-primary">Забыть устройство</button>
+            </form>
+        }
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            <a href="Account/Manage/Disable2fa" class="btn btn-primary">Отключить 2FA</a>
+            <a href="Account/Manage/GenerateRecoveryCodes" class="btn btn-primary">Создать коды восстановления</a>
+        </div>
+    }
+
+    <h4>Приложение-аутентификатор</h4>
+    @if (_hasAuthenticator)
+    {
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary">Настроить приложение</a>
+            <a href="Account/Manage/ResetAuthenticator" class="btn btn-primary">Сбросить приложение</a>
+        </div>
+    }
+    else
+    {
+        <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary">Добавить приложение</a>
+    }
+}
+else
+{
+    <div class="alert alert-danger">
+        <strong>Политика конфиденциальности и cookie не были приняты.</strong>
+        <p>Вы должны согласиться с политиками чтобы использовать 2FA.</p>
+    </div>
+}
+
+@code {
+    private bool _canTrack;
+    private bool _hasAuthenticator;
+    private int _recoveryCodesLeft;
+    private bool _is2FaEnabled;
+    private bool _isMachineRemembered;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ApplicationUser user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        _canTrack = HttpContext.Features.Get<ITrackingConsentFeature>()?.CanTrack ?? true;
+        _hasAuthenticator = await UserManager.GetAuthenticatorKeyAsync(user) is not null;
+        _is2FaEnabled = await UserManager.GetTwoFactorEnabledAsync(user);
+        _isMachineRemembered = await SignInManager.IsTwoFactorClientRememberedAsync(user);
+        _recoveryCodesLeft = await UserManager.CountRecoveryCodesAsync(user);
+    }
+
+    private async Task OnSubmitForgetBrowserAsync()
+    {
+        await SignInManager.ForgetTwoFactorClientAsync();
+
+        RedirectManager.RedirectToCurrentPageWithStatus(
+            "The current browser has been forgotten. When you login again from this browser you will be prompted for your 2fa code.",
+            HttpContext);
+    }
+
+}

@@ -1,0 +1,112 @@
+﻿@page "/Account/Manage"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using Artisan.Next.Data.Entities
+@using Artisan.Next.JSInterop
+@using Artisan.Next.Services
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityUserAccessor UserAccessor
+@inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
+@inject ManagedFileService ManagedFileService
+
+<PageTitle>Профиль</PageTitle>
+
+<h3>Профиль</h3>
+<StatusMessage />
+
+<div class="row">
+    <div class="col-md-6 d-grid gap-2">
+        <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post" enctype="multipart/form-data" >
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="Input.UserName" class="form-control" placeholder="Введите ваше имя пользователя." id="username" />
+                <label for="username" class="form-label">Имя пользователя</label>
+                <ValidationMessage For="@(() => Input.UserName)" class="text-danger" />
+            </div>
+            @if (_avatarSrc is not null)
+            {
+                <img src="@_avatarSrc" class="img-thumbnail" alt="Avatar" id="avatar">
+                <div class="mb-3">
+                    <label for="new-avatar" class="form-label">Загрузите новый аватар</label>
+                    <InputFile class="form-control" accept="image/*" id="new-avatar" name="Input.NewAvatar"/>
+                </div>
+            }
+            else
+            {
+                <button class="btn btn-primary" type="button" disabled>
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Loading...
+                </button>
+            }
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Сохранить</button>
+        </EditForm>
+        <hr/>
+        <form action="Account/Logout" method="post">
+            <AntiforgeryToken />
+            <input type="hidden" name="ReturnUrl" value="@_currentUrl" />
+            <button type="submit" class="w-100 btn btn-lg btn-secondary mb-3">
+                Выйти
+            </button>
+        </form>
+    </div>
+</div>
+
+@code {
+    private string? _currentUrl;
+    private ApplicationUser _user = null!;
+    private string? _username;
+    private string? _avatarSrc;
+    private IBrowserFile? _newAvatar;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        _user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        _username = await UserManager.GetUserNameAsync(_user);
+        _avatarSrc = _user.AvatarName.GetManagedFilePath();
+
+        Input.UserName ??= _username;
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        if (Input.UserName != _username)
+        {
+            var setPhoneResult = await UserManager.SetUserNameAsync(_user, Input.UserName);
+            if (setPhoneResult.Succeeded is false)
+            {
+                RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
+            }
+        }
+
+        if (Input.NewAvatar is not null)
+        {
+            var file = await ManagedFileService.SaveFile(Input.NewAvatar);
+            _user.Avatar = file;
+            await UserManager.UpdateAsync(_user);
+        }
+
+        await SignInManager.RefreshSignInAsync(_user);
+        RedirectManager.RedirectToCurrentPageWithStatus("Your profile has been updated", HttpContext);
+    }
+
+    private sealed class InputModel
+    {
+        [Display(Name = "Имя пользователя")]
+        public string? UserName { get; set; }
+
+        [Display(Name = "Новый аватар")]
+        public IFormFile? NewAvatar { get; set; }
+    }
+}

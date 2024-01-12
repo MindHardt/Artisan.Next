@@ -1,0 +1,38 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Artisan.Next.Data
+@using Artisan.Next.Data.Entities
+
+@inject SignInManager<ApplicationUser> SignInManager
+
+<ul class="nav nav-pills flex-column">
+    <li class="nav-item">
+        <NavLink class="nav-link" href="Account/Manage" Match="NavLinkMatch.All">Профиль</NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="Account/Manage/Email">Email</NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="Account/Manage/ChangePassword">Пароль</NavLink>
+    </li>
+    @if (_hasExternalLogins)
+    {
+        <li class="nav-item">
+            <NavLink class="nav-link" href="Account/Manage/ExternalLogins">OAuth</NavLink>
+        </li>
+    }
+    <li class="nav-item">
+        <NavLink class="nav-link" href="Account/Manage/TwoFactorAuthentication">Двухфакторная аутентификация</NavLink>
+    </li>
+    <li class="nav-item">
+        <NavLink class="nav-link" href="Account/Manage/PersonalData">Персональные данные</NavLink>
+    </li>
+</ul>
+
+@code {
+    private bool _hasExternalLogins;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+    }
+}
