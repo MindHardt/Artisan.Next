@@ -23,4 +23,8 @@
       <Reference Include="Microsoft.Extensions.Identity.Core" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Features\" />
+    </ItemGroup>
+
 </Project>

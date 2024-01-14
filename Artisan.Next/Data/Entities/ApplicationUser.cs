@@ -12,6 +12,8 @@ public class ApplicationUser : IdentityUser<Guid>, IEntityTypeConfiguration<Appl
     public string AvatarName { get; set; } = ManagedFile.DefaultAvatarName;
     public ManagedFile Avatar { get; set; } = null!;
 
+    public ICollection<MapArea> MapAreas { get; set; } = null!;
+
     public void Configure(EntityTypeBuilder<ApplicationUser> builder)
     {
         builder.Property(x => x.AvatarName)

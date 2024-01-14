@@ -1,5 +1,5 @@
 ﻿@inherits LayoutComponentBase
-@layout Client.Layout.MainLayout
+@layout Components.AccountLayout
 @inject NavigationManager NavigationManager
 
 @if (HttpContext is null)
@@ -10,7 +10,9 @@
 }
 else
 {
-    @Body
+    <div class="m-5">
+        @Body
+    </div>
 }
 
 @code {

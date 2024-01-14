@@ -1,0 +1,79 @@
+﻿@page "/Minifigures"
+
+@inject HttpClient HttpClient
+
+<PageTitle>Минифигурки</PageTitle>
+
+<h3>Минифигурки</h3>
+
+<div class="mb-3">
+    <button class="btn btn-secondary" disabled="@(_minnieImage is null)" @onclick="@ReadMinifigureName">
+        Вставить имя файла
+    </button>
+    <InputText @bind-Value="@_minnieName" placeholder="Имя минифигурки" class="form-control"/>
+    <InputFile OnChange="@UploadMinifigureImage" class="form-control" accept="image/*"/>
+    <button class="btn btn-lg btn-primary" disabled="@ShouldForbidAddingMinnie" @onclick="@AddMinnie">
+        Добавить минифигурку
+    </button>
+</div>
+
+<hr/>
+
+<table class="table table-sm table-striped table-hover w-50">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Имя</th>
+        <th scope="col">Удалить</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var row in _minnies.Select((minnie, i) => (minnie, i)))
+    {
+        <tr>
+            <th scope="row">@(row.i + 1)</th>
+            <td>@row.minnie.Name</td>
+            <td>
+                <button class="btn btn-danger"
+                        @onclick="@(() => _minnies.RemoveAt(row.i))">
+                    🗑️
+                </button>
+                <button class="btn btn-secondary" 
+                        @onclick="@(() => (_minnies[row.i - 1], _minnies[row.i]) = (_minnies[row.i], _minnies[row.i - 1]))" 
+                        disabled="@(row.i == 0)">
+                    🔼
+                </button>
+                <button class="btn btn-secondary" 
+                        @onclick="@(() => (_minnies[row.i + 1], _minnies[row.i]) = (_minnies[row.i], _minnies[row.i + 1]))" 
+                        disabled="@(row.i == _minnies.Count - 1)">
+                    🔽
+                </button>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@if (_originalSvg is null)
+{
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+}
+else
+{
+    @((MarkupString)PrepareSvg())
+}
+
+@code {
+    private string _minnieName = "Название минифигурки";
+    private IBrowserFile? _minnieImage;
+
+    private string? _originalSvg;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _originalSvg = TransformOriginalSvg(await HttpClient.GetStringAsync("minnies.svg"));
+    }
+
+}

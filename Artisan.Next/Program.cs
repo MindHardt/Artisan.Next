@@ -6,7 +6,6 @@ using Artisan.Next.Components;
 using Artisan.Next.Components.Account;
 using Artisan.Next.Data;
 using Artisan.Next.Data.Entities;
-using Artisan.Next.JSInterop;
 using Artisan.Next.Services;
 using Microsoft.AspNetCore.DataProtection;
 

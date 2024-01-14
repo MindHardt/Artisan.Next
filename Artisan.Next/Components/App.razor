@@ -10,10 +10,31 @@
     <link rel="stylesheet" href="Artisan.Next.styles.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet @rendermode="@RenderModeForPage" />
+    <style>
+        .blazor-loader {
+            width: var(--blazor-load-percentage, 0%);
+        }
+        .blazor-loader:after {
+            content: var(--blazor-load-percentage-text, "Loading");
+        }
+    </style>
 </head>
 
 <body>
-    <Routes @rendermode="@RenderModeForPage" />
+    <div class="progress" id="loader">
+      <div class="progress-bar progress-bar-striped progress-bar-animated blazor-loader" role="progressbar"></div>
+    </div>
+    <Routes @rendermode="@RenderModeForPage"/>
+    <script>
+        let interval = setInterval(() => {
+            let element = document.getElementById('loader');
+            let styles = window.getComputedStyle(element);
+            if (styles.getPropertyValue('--blazor-load-percentage') === '100%') {
+                element.hidden = true;
+                clearInterval(interval);
+            }
+        }, 1000);
+    </script>
     <script src="_framework/blazor.web.js"></script>
 </body>
 
@@ -24,7 +45,9 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    private IComponentRenderMode? RenderModeForPage => HttpContext.Request.Path.StartsWithSegments("/Account")
+    private bool IsSsrPage => HttpContext.Request.Path.StartsWithSegments("/Account");
+
+    private IComponentRenderMode? RenderModeForPage => IsSsrPage
         ? null
-        : InteractiveWebAssembly;
+        : new InteractiveWebAssemblyRenderMode(prerender: false);
 }
