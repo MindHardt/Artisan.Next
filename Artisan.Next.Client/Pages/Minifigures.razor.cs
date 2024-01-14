@@ -11,6 +11,7 @@ public partial class Minifigures
     private async Task UploadMinifigureImage(InputFileChangeEventArgs e)
     {
         _minnieImage = await e.File.RequestImageFileAsync("jpeg", 512, 512);
+        ReadMinifigureName();
     }
 
     private bool ShouldForbidAddingMinnie =>
@@ -30,7 +31,12 @@ public partial class Minifigures
         await imageStream.CopyToAsync(base64Stream);
 
         var base64String = Convert.ToBase64String(base64Stream.ToArray());
-        _minnies.Add(new Minifigure(base64String, _minnieName));
+        var minnie = new Minifigure
+        {
+            Name = _minnieName,
+            ImageBase64 = base64String
+        };
+        _minnies.Add(minnie);
     }
 
     private static string TransformOriginalSvg(string svg)
@@ -64,6 +70,9 @@ public partial class Minifigures
         return processed;
     }
 
+    private async Task DownloadSvg()
+        => await Download.DownloadAsync(PrepareSvg(), "minnies.svg");
+
     [GeneratedRegex(@"\$\{(?<Name>[a-z]+_[0-9]+)\}")]
     private static partial Regex PreparationRegex();
     private static Regex DefaultPortraitRegex => new(Regex.Escape(DefaultPortraitBase64));
@@ -80,7 +89,9 @@ public partial class Minifigures
         "mqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A/v4ooA//2Q==";
 }
 
-public record Minifigure(string ImageBase64, string Name)
+public record Minifigure
 {
-    public string NormalizedName { get; } = HttpUtility.HtmlEncode(Name);
+    public required string ImageBase64 { get; set; }
+    public required string Name { get; set; }
+    public string NormalizedName => HttpUtility.HtmlEncode(Name);
 }

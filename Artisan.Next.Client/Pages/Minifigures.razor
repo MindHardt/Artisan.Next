@@ -1,15 +1,14 @@
 ﻿@page "/Minifigures"
+@using Artisan.Next.Client.JsInterop
 
 @inject HttpClient HttpClient
+@inject DownloadJsInterop Download
 
 <PageTitle>Минифигурки</PageTitle>
 
 <h3>Минифигурки</h3>
 
 <div class="mb-3">
-    <button class="btn btn-secondary" disabled="@(_minnieImage is null)" @onclick="@ReadMinifigureName">
-        Вставить имя файла
-    </button>
     <InputText @bind-Value="@_minnieName" placeholder="Имя минифигурки" class="form-control"/>
     <InputFile OnChange="@UploadMinifigureImage" class="form-control" accept="image/*"/>
     <button class="btn btn-lg btn-primary" disabled="@ShouldForbidAddingMinnie" @onclick="@AddMinnie">
@@ -32,21 +31,39 @@
     {
         <tr>
             <th scope="row">@(row.i + 1)</th>
-            <td>@row.minnie.Name</td>
+            <td>
+                <div class="form-group">
+                    <InputText @bind-Value="@row.minnie.Name" class="form-control" />
+                </div>
+            </td>
             <td>
                 <button class="btn btn-danger"
                         @onclick="@(() => _minnies.RemoveAt(row.i))">
-                    🗑️
+                    <i class="bi bi-trash"></i>
+                </button>
+                <button class="btn btn-primary" 
+                        @onclick="@(() => _minnies.Add(row.minnie with { }))" >
+                    <i class="bi bi-copy"></i>
+                </button>
+                <button class="btn btn-secondary" 
+                        @onclick="@(() => { _minnies.RemoveAt(row.i); _minnies.Insert(0, row.minnie); })" 
+                        disabled="@(row.i == 0)">
+                    <i class="bi bi-chevron-double-up"></i>
                 </button>
                 <button class="btn btn-secondary" 
                         @onclick="@(() => (_minnies[row.i - 1], _minnies[row.i]) = (_minnies[row.i], _minnies[row.i - 1]))" 
                         disabled="@(row.i == 0)">
-                    🔼
+                    <i class="bi bi-chevron-up"></i>
+                </button>
+                <button class="btn btn-secondary" 
+                        @onclick="@(() => { _minnies.RemoveAt(row.i); _minnies.Add(row.minnie); })" 
+                        disabled="@(row.i == _minnies.Count - 1)">
+                    <i class="bi bi-chevron-double-down"></i>
                 </button>
                 <button class="btn btn-secondary" 
                         @onclick="@(() => (_minnies[row.i + 1], _minnies[row.i]) = (_minnies[row.i], _minnies[row.i + 1]))" 
                         disabled="@(row.i == _minnies.Count - 1)">
-                    🔽
+                    <i class="bi bi-chevron-down"></i>
                 </button>
             </td>
         </tr>
@@ -62,7 +79,13 @@
 }
 else
 {
-    @((MarkupString)PrepareSvg())
+    <div class="container">
+        @((MarkupString)PrepareSvg())
+    </div>
+    <button class="btn btn-lg btn-primary" @onclick="@DownloadSvg">
+        <i class="bi bi-download"></i>
+        SVG
+    </button>
 }
 
 @code {

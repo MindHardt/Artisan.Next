@@ -1,4 +1,5 @@
 ﻿<!DOCTYPE html>
+<!--suppress CssUnresolvedCustomProperty -->
 <html lang="en">
 
 <head>
@@ -6,10 +7,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="bootstrap/icons/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="app.css" />
+    @* ReSharper disable once Html.PathError *@
     <link rel="stylesheet" href="Artisan.Next.styles.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet @rendermode="@RenderModeForPage" />
+    <title>Artisan.Next</title>
     <style>
         .blazor-loader {
             width: var(--blazor-load-percentage, 0%);
@@ -25,16 +29,7 @@
       <div class="progress-bar progress-bar-striped progress-bar-animated blazor-loader" role="progressbar"></div>
     </div>
     <Routes @rendermode="@RenderModeForPage"/>
-    <script>
-        let interval = setInterval(() => {
-            let element = document.getElementById('loader');
-            let styles = window.getComputedStyle(element);
-            if (styles.getPropertyValue('--blazor-load-percentage') === '100%') {
-                element.hidden = true;
-                clearInterval(interval);
-            }
-        }, 1000);
-    </script>
+    @* ReSharper disable once Html.PathError *@
     <script src="_framework/blazor.web.js"></script>
 </body>
 
