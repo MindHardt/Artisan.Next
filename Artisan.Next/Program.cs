@@ -6,6 +6,7 @@ using Artisan.Next.Components;
 using Artisan.Next.Components.Account;
 using Artisan.Next.Data;
 using Artisan.Next.Data.Entities;
+using Artisan.Next.EmailSender;
 using Artisan.Next.Services;
 using Microsoft.AspNetCore.DataProtection;
 
@@ -37,7 +38,18 @@ builder.Services.AddDbContext<DataContext>(options =>
 });
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = true;
+        options.Password = new PasswordOptions
+        {
+            RequiredLength = 8,
+            RequireNonAlphanumeric = false,
+            RequireLowercase = false,
+            RequireUppercase = false,
+            RequireDigit = false
+        };
+    })
     .AddEntityFrameworkStores<DataContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
@@ -54,8 +66,10 @@ builder.Services.AddAuthentication()
         googleOptions.CallbackPath = "/signin-google";
     });
 
-builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
+builder.Services.AddScoped<IEmailSender<ApplicationUser>, YandexSmtpEmailSender>();
 builder.Services.AddServices();
+
+builder.Services.AddOptions<SmtpOptions>().BindConfiguration("Smtp");
 
 var app = builder.Build();
 
