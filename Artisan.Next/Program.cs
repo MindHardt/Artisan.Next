@@ -86,6 +86,7 @@ if (app.Configuration["Host"] is { } host)
     app.Use((ctx, next) =>
     {
         ctx.Request.Headers.Host = host;
+        ctx.Request.Scheme = "https";
         return next(ctx);
     });
 }
