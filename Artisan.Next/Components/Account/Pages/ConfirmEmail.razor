@@ -6,6 +6,7 @@
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IdentityRedirectManager RedirectManager
+@inject SignInManager<ApplicationUser> SignInManager
 
 <PageTitle>Подтверждение почты</PageTitle>
 
@@ -42,6 +43,7 @@
             var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(Code));
             IdentityResult result = await UserManager.ConfirmEmailAsync(user, code);
             _statusMessage = result.Succeeded ? "Спасибо за подтверждение почты." : "Ошибка при подтверждении почты.";
+            await SignInManager.SignInAsync(user, isPersistent: true);
         }
     }
 

@@ -29,10 +29,14 @@
             </div>
             @if (_avatarSrc is not null)
             {
-                <img src="@_avatarSrc" class="img-thumbnail" alt="Avatar" id="avatar" style="object-fit: fill;width: 25rem; height: 25rem;">
-                <div class="mb-3">
-                    <label for="new-avatar" class="form-label">Загрузите новый аватар</label>
-                    <input type="file" class="form-control" accept="image/*" id="new-avatar" name="Input.NewAvatar"/>
+                <div class="card mb-3" style="width: 25rem">
+                    <img src="@_avatarSrc" class="card-img-top img-thumbnail" alt="Avatar" id="avatar" style="object-fit: fill;width: 25rem; height: 25rem;">
+                    <div class="card-body">
+                        <div class="btn btn-primary btn-lg start-50 translate-middle-x position-relative w-100" onclick="document.getElementById('new-avatar').click()">
+                            Сменить аватар
+                        </div>
+                        <input type="file" class="form-control" accept="image/*" id="new-avatar" name="Input.NewAvatar" hidden/>
+                    </div>
                 </div>
                 <script>
                     document.getElementById('new-avatar').onchange = function(e) {

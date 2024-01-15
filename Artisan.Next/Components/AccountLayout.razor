@@ -1,12 +1,14 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="m-3">
-    <script>
-        document.getElementById('loader').hidden = true;
-    </script>
     <a href="" class="btn btn-primary btn-lg">
         <i class="bi bi-arrow-left"></i>
         На главную
     </a>
+    <style>
+        #loader {
+            display: none;
+        }
+    </style>
     @Body
 </div>

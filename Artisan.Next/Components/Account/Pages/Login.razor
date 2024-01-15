@@ -40,9 +40,9 @@
                 </div>
                 <div class="d-grid gap-2">
                     <button class="w-100 btn btn-lg btn-primary" type="submit">Логин</button>
-                    <a class="w-100 btn btn-lg  btn-secondary" href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Зарегистрироваться</a>
-                    <a class="w-100 btn btn-lg  btn-outline-secondary" href="Account/ForgotPassword">Забыли пароль?</a>
-                    <a class="w-100 btn btn-lg  btn-outline-secondary" href="Account/ResendEmailConfirmation">Отправить письмо на почту</a>
+                    <a class="w-100 btn btn-lg btn-secondary" href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))">Зарегистрироваться</a>
+                    <a class="w-100 btn btn-lg btn-outline-secondary" href="Account/ForgotPassword">Забыли пароль?</a>
+                    <a class="w-100 btn btn-lg btn-outline-secondary" href="Account/ResendEmailConfirmation">Отправить письмо на почту</a>
                 </div>
             </EditForm>
         </section>
