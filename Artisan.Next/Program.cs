@@ -86,7 +86,6 @@ if (app.Configuration["Host"] is { } host)
     app.Use((ctx, next) =>
     {
         ctx.Request.Headers.Host = host;
-        ctx.RequestServices.GetRequiredService<ILogger<Program>>().LogInformation("Headers: {Headers}", ctx.Request.Headers);
         return next(ctx);
     });
 }
