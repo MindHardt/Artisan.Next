@@ -81,11 +81,15 @@ await using (var scope = app.Services.CreateAsyncScope())
     await scope.ServiceProvider.GetRequiredService<DataContext>().Database.MigrateAsync();
 }
 
-app.Use((ctx, next) =>
+if (app.Configuration["Host"] is { } host)
 {
-    ctx.RequestServices.GetRequiredService<ILogger<Program>>().LogInformation("Headers: {Headers}", ctx.Request.Headers);
-    return next(ctx);
-});
+    app.Use((ctx, next) =>
+    {
+        ctx.Request.Headers.Host = host;
+        ctx.RequestServices.GetRequiredService<ILogger<Program>>().LogInformation("Headers: {Headers}", ctx.Request.Headers);
+        return next(ctx);
+    });
+}
 
 app.UseHttpsRedirection();
 
