@@ -9,8 +9,11 @@ using Artisan.Next.Data.Entities;
 using Artisan.Next.EmailSender;
 using Artisan.Next.Services;
 using Microsoft.AspNetCore.DataProtection;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((ctx, logger) => logger.ReadFrom.Configuration(ctx.Configuration));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -73,6 +76,11 @@ builder.Services.AddOptions<SmtpOptions>().BindConfiguration("Smtp");
 
 var app = builder.Build();
 
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    await scope.ServiceProvider.GetRequiredService<DataContext>().Database.MigrateAsync();
+}
+
 app.UseHttpsRedirection();
 
 // Configure the HTTP request pipeline.
@@ -98,4 +106,4 @@ app.MapAdditionalIdentityEndpoints();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

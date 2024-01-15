@@ -9,6 +9,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1F5E5EF8-309D-4E4C-9C77-F0441895AD18}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		docker-compose.yml = docker-compose.yml
+		.env = .env
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Artisan.Next.Tests", "Artisan.Next.Tests\Artisan.Next.Tests.csproj", "{37E09F07-4063-418E-BCF0-B7040C89F2B6}"

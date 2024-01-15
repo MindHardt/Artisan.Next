@@ -1,0 +1,22 @@
+﻿networks:
+  postgres:
+    external: true
+
+  seq:
+    external: true
+
+services:
+  artisan.next:
+    container_name: artisan.next
+    restart: unless-stopped
+    image: artisan.next
+    ports:
+      - 8080:8080
+    build:
+      context: .
+      dockerfile: Artisan.Next/Dockerfile
+    env_file:
+      - .env
+    networks:
+      - seq
+      - postgres
