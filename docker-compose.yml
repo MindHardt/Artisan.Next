@@ -1,4 +1,7 @@
-﻿networks:
+﻿volumes: 
+  user_files:
+
+networks:
   postgres:
     external: true
 
@@ -20,3 +23,5 @@ services:
     networks:
       - seq
       - postgres
+    volumes:
+      - user_files:/app/wwwroot/files
