@@ -66,7 +66,7 @@ builder.Services.AddAuthentication()
         googleOptions.CallbackPath = "/signin-google";
     });
 
-builder.Services.AddScoped<IEmailSender<ApplicationUser>, YandexSmtpEmailSender>();
+builder.Services.AddScoped<IEmailSender<ApplicationUser>, MailKitEmailSender>();
 builder.Services.AddServices();
 
 builder.Services.AddOptions<SmtpOptions>().BindConfiguration("Smtp");

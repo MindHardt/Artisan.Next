@@ -33,7 +33,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="EmailSender\EmailTemplate.html">
+      <None Include="wwwroot\emails\email.html">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
