@@ -1,3 +1,6 @@
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Artisan.Next.Client;
 using Artisan.Next.Client.JsInterop;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -11,5 +14,11 @@ builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticat
 builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)});
 
 builder.Services.AddScoped<DownloadJsInterop>();
+builder.Services.Configure<JsonSerializerOptions>(options =>
+{
+    options.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+    options.WriteIndented = true;
+    options.Converters.Add(new JsonStringEnumConverter());
+});
 
 await builder.Build().RunAsync();

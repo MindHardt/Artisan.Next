@@ -16,10 +16,30 @@ public class ManagedFile : IEntityTypeConfiguration<ManagedFile>
     [MaxLength(64)]
     public required string MimeType { get; set; }
 
+    public DateTimeOffset DateCreated { get; set; }
+    public DateTimeOffset DateUpdated { get; set; }
+
+    public Guid? OwnerId { get; set; }
+    public ApplicationUser? Owner { get; set; }
+
+    public ManagedFileScope Scope { get; set; }
+
     public void Configure(EntityTypeBuilder<ManagedFile> builder)
     {
         builder.ToTable("Files");
         builder.HasKey(x => x.UniqueName);
+        builder.HasIndex(x => new { x.OwnerId, x.Scope });
+
+        builder.Property(x => x.Scope).HasConversion<string>();
+        builder.Property(x => x.Scope).HasMaxLength(Enum.GetValues<ManagedFileScope>().Max(x => x.ToString().Length));
+        builder.Property(x => x.DateCreated).ValueGeneratedOnAdd();
+        builder.Property(x => x.DateUpdated).ValueGeneratedOnAddOrUpdate();
+
+        builder.HasOne(x => x.Owner)
+            .WithMany(x => x.Files)
+            .HasForeignKey(x => x.OwnerId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasData(
         [
@@ -27,8 +47,17 @@ public class ManagedFile : IEntityTypeConfiguration<ManagedFile>
             {
                 MimeType = System.Net.Mime.MediaTypeNames.Image.Jpeg,
                 OriginalName = DefaultAvatarName,
-                UniqueName = DefaultAvatarName
+                UniqueName = DefaultAvatarName,
+                OwnerId = null,
+                Scope = ManagedFileScope.Avatar
             }
         ]);
     }
+}
+
+public enum ManagedFileScope
+{
+    Unknown = 0,
+    Avatar = 1,
+    MinniesSheet = 2
 }

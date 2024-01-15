@@ -3,7 +3,6 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
 @using Artisan.Next.Data.Entities
-@using Artisan.Next.JSInterop
 @using Artisan.Next.Services
 
 @inject UserManager<ApplicationUser> UserManager
@@ -30,11 +29,16 @@
             </div>
             @if (_avatarSrc is not null)
             {
-                <img src="@_avatarSrc" class="img-thumbnail" alt="Avatar" id="avatar">
+                <img src="@_avatarSrc" class="img-thumbnail" alt="Avatar" id="avatar" style="object-fit: fill;width: 25rem; height: 25rem;">
                 <div class="mb-3">
                     <label for="new-avatar" class="form-label">Загрузите новый аватар</label>
-                    <InputFile class="form-control" accept="image/*" id="new-avatar" name="Input.NewAvatar"/>
+                    <input type="file" class="form-control" accept="image/*" id="new-avatar" name="Input.NewAvatar"/>
                 </div>
+                <script>
+                    document.getElementById('new-avatar').onchange = function(e) {
+                        document.getElementById('avatar').src = URL.createObjectURL(e.target.files[0]);
+                    }
+                </script>
             }
             else
             {
@@ -92,7 +96,7 @@
 
         if (Input.NewAvatar is not null)
         {
-            var file = await ManagedFileService.SaveFile(Input.NewAvatar);
+            var file = await ManagedFileService.SaveFile(Input.NewAvatar, _user.Id, ManagedFileScope.Avatar);
             _user.Avatar = file;
             await UserManager.UpdateAsync(_user);
         }

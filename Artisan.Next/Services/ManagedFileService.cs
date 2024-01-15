@@ -11,9 +11,11 @@ public class ManagedFileService(IWebHostEnvironment hostEnvironment, DataContext
     /// <param name="data">File contents. This method doesn't dispose this <see cref="Stream"/>.</param>
     /// <param name="fileName">Original file name.</param>
     /// <param name="mimeType">File's mime type.</param>
+    /// <param name="ownerId"></param>
+    /// <param name="scope"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
-    public async Task<ManagedFile> SaveFile(Stream data, string fileName, string mimeType, CancellationToken ct = default)
+    public async Task<ManagedFile> SaveFile(Stream data, string fileName, string mimeType, Guid? ownerId, ManagedFileScope scope = ManagedFileScope.Unknown, CancellationToken ct = default)
     {
         var uniqueName = GetUniqueName(fileName);
         await using var fs = File.Create($"{hostEnvironment.WebRootPath}/files/{uniqueName}");
@@ -23,7 +25,8 @@ public class ManagedFileService(IWebHostEnvironment hostEnvironment, DataContext
         {
             UniqueName = uniqueName,
             OriginalName = fileName,
-            MimeType = mimeType
+            MimeType = mimeType,
+            Scope = scope
         };
         dataContext.Files.Add(managedFile);
         await dataContext.SaveChangesAsync(ct);
@@ -36,12 +39,14 @@ public class ManagedFileService(IWebHostEnvironment hostEnvironment, DataContext
     /// <see cref="IFormFile.OpenReadStream"/> and disposes opened stream.
     /// </summary>
     /// <param name="file"></param>
+    /// <param name="ownerId"></param>
+    /// <param name="scope"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
-    public async Task<ManagedFile> SaveFile(IFormFile file, CancellationToken ct = default)
+    public async Task<ManagedFile> SaveFile(IFormFile file, Guid? ownerId, ManagedFileScope scope = ManagedFileScope.Unknown, CancellationToken ct = default)
     {
         await using var stream = file.OpenReadStream();
-        return await SaveFile(stream, file.FileName, file.ContentType, ct);
+        return await SaveFile(stream, file.FileName, file.ContentType, ownerId, scope, ct);
     }
 
     private static string GetUniqueName(string originalName)

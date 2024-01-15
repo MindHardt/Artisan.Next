@@ -13,6 +13,7 @@ public class ApplicationUser : IdentityUser<Guid>, IEntityTypeConfiguration<Appl
     public ManagedFile Avatar { get; set; } = null!;
 
     public ICollection<MapArea> MapAreas { get; set; } = null!;
+    public ICollection<ManagedFile> Files { get; set; } = null!;
 
     public void Configure(EntityTypeBuilder<ApplicationUser> builder)
     {

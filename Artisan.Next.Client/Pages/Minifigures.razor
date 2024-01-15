@@ -1,23 +1,41 @@
 ﻿@page "/Minifigures"
 @using Artisan.Next.Client.JsInterop
+@using Microsoft.Extensions.Options
+@using System.Text.Json
 
 @inject HttpClient HttpClient
 @inject DownloadJsInterop Download
+@inject IOptions<JsonSerializerOptions> JsonOptions
 
 <PageTitle>Минифигурки</PageTitle>
 
 <h3>Минифигурки</h3>
 
 <div class="mb-3">
-    <InputText @bind-Value="@_minnieName" placeholder="Имя минифигурки" class="form-control"/>
-    <InputFile OnChange="@UploadMinifigureImage" class="form-control" accept="image/*"/>
-    <button class="btn btn-lg btn-primary" disabled="@ShouldForbidAddingMinnie" @onclick="@AddMinnie">
+    <InputFile OnChange="@UploadMinifigureImage" class="form-control" accept="image/*" hidden id="minnie-image-input"/>
+    <button 
+        class="btn btn-lg btn-primary" 
+        disabled="@IsFilled" 
+        onclick="document.getElementById('minnie-image-input').click()">
+        <i class="bi bi-plus-circle"></i>
         Добавить минифигурку
     </button>
 </div>
 
 <hr/>
-
+<InputFile id="import-json" hidden accept="application/json" OnChange="@ImportJson"/>
+<button class="btn btn-success" onclick="document.getElementById('import-json').click()">
+    <i class="bi bi-upload"></i>
+    Импорт JSON
+</button>
+<button class="btn btn-success" @onclick="@ExportJson">
+    <i class="bi bi-download"></i>
+    Экспорт JSON
+</button>
+<button class="btn btn-danger" @onclick="@(() => _minnies.Clear())">
+    <i class="bi bi-trash"></i>
+    Очистить
+</button>
 <table class="table table-sm table-striped table-hover w-50">
     <thead>
     <tr>
@@ -29,11 +47,12 @@
     <tbody>
     @foreach (var row in _minnies.Select((minnie, i) => (minnie, i)))
     {
+        var isExtra = row.i >= _currentTemplate.Count;
         <tr>
             <th scope="row">@(row.i + 1)</th>
             <td>
                 <div class="form-group">
-                    <InputText @bind-Value="@row.minnie.Name" class="form-control" />
+                    <InputText @bind-Value="@row.minnie.Name" class="form-control" readonly="@isExtra" />
                 </div>
             </td>
             <td>
@@ -41,8 +60,9 @@
                         @onclick="@(() => _minnies.RemoveAt(row.i))">
                     <i class="bi bi-trash"></i>
                 </button>
-                <button class="btn btn-primary" 
-                        @onclick="@(() => _minnies.Add(row.minnie with { }))" >
+                <button class="btn btn-primary"
+                        @onclick="@(() => _minnies.Insert(row.i + 1, row.minnie with { }))"
+                        disabled="@IsFilled">
                     <i class="bi bi-copy"></i>
                 </button>
                 <button class="btn btn-secondary" 
@@ -65,11 +85,33 @@
                         disabled="@(row.i == _minnies.Count - 1)">
                     <i class="bi bi-chevron-down"></i>
                 </button>
+                @if (isExtra)
+                {
+                    <span class="badge bg-danger" title="Текущий лист минифигурок не вмещает этот спрайт">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        Не влезает
+                    </span>
+                }
             </td>
         </tr>
     }
     </tbody>
 </table>
+@foreach (var template in Templates)
+{
+    var id = $"{nameof(template)}_{template.Name}";
+    <input 
+        type="radio" 
+        class="btn-check" 
+        name="@nameof(Templates)" 
+        id="@id" 
+        autocomplete="off" 
+        checked="@(_currentTemplate == template)"
+        @onchange="@(() => SetTemplate(template))">
+    <label class="btn btn-primary" for="@id">
+        @template.Name
+    </label>
+}
 
 @if (_originalSvg is null)
 {
@@ -89,14 +131,19 @@ else
 }
 
 @code {
-    private string _minnieName = "Название минифигурки";
-    private IBrowserFile? _minnieImage;
+    private bool IsFilled => _minnies.Count >= _currentTemplate.Count;
+    private record Template(string Name, string Url, int Count);
+    private static readonly Template[] Templates =
+    [
+        new Template("Маленькие", "svg/minnies_small.svg", 24),
+        new Template("Большие", "svg/minnies_big.svg", 9)
+    ];
+
+    private Template _currentTemplate = Templates.First();
 
     private string? _originalSvg;
 
-    protected override async Task OnInitializedAsync()
-    {
-        _originalSvg = TransformOriginalSvg(await HttpClient.GetStringAsync("minnies.svg"));
-    }
+    protected override Task OnInitializedAsync()
+        => LoadOriginalSvg();
 
 }
