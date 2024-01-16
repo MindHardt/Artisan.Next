@@ -90,10 +90,12 @@
     {
         if (Input.UserName != _username)
         {
-            var setPhoneResult = await UserManager.SetUserNameAsync(_user, Input.UserName);
-            if (setPhoneResult.Succeeded is false)
+            var setUserNameResult = await UserManager.SetUserNameAsync(_user, Input.UserName);
+            if (setUserNameResult.Succeeded is false)
             {
-                RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
+                var allowedCharacters = UserManager.Options.User.AllowedUserNameCharacters;
+                var errorMessage = $"Ошибка установки никнейма. Убедитесь что используете только символы из списка {allowedCharacters}";
+                RedirectManager.RedirectToCurrentPageWithStatus(errorMessage, HttpContext);
             }
         }
 
@@ -105,7 +107,7 @@
         }
 
         await SignInManager.RefreshSignInAsync(_user);
-        RedirectManager.RedirectToCurrentPageWithStatus("Your profile has been updated", HttpContext);
+        RedirectManager.RedirectToCurrentPageWithStatus("Профиль успешно обновлен!", HttpContext);
     }
 
     private sealed class InputModel

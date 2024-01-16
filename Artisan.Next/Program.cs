@@ -55,6 +55,10 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
             RequireUppercase = false,
             RequireDigit = false
         };
+        options.User.AllowedUserNameCharacters =
+            "АаБбВвГгДдЕеËëЖжЗзИиЙйКкЛлМмНнОоПпРрСсТтУуФфХхЦцЧчШшЩщЪъЫыЬьЭэЮюЯя" +
+            "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz" +
+            "0123456789+-._@!?*#()[]{}";
     })
     .AddEntityFrameworkStores<DataContext>()
     .AddSignInManager()
