@@ -26,18 +26,20 @@
 
 <hr/>
 <InputFile id="import-json" hidden accept="application/json" OnChange="@ImportJson"/>
-<button class="btn btn-success" onclick="document.getElementById('import-json').click()">
-    <i class="bi bi-upload"></i>
-    Импорт JSON
-</button>
-<button class="btn btn-success" @onclick="@ExportJson">
-    <i class="bi bi-download"></i>
-    Экспорт JSON
-</button>
-<button class="btn btn-danger" @onclick="@(() => _minnies.Clear())">
-    <i class="bi bi-trash"></i>
-    Очистить
-</button>
+<div class="mb-2">
+    <button class="btn btn-success" onclick="document.getElementById('import-json').click()">
+        <i class="bi bi-upload"></i>
+        Импорт JSON
+    </button>
+    <button class="btn btn-success" @onclick="@ExportJson">
+        <i class="bi bi-download"></i>
+        Экспорт JSON
+    </button>
+    <button class="btn btn-danger" @onclick="@(() => _minnies.Clear())">
+        <i class="bi bi-trash"></i>
+        Очистить
+    </button>
+</div>
 @if (_minnies.Any())
 {
     <table class="table table-sm table-striped table-hover w-50">
