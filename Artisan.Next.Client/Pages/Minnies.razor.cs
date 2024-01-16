@@ -1,12 +1,11 @@
 ﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Web;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Artisan.Next.Client.Pages;
 
-public partial class Minifigures
+public partial class Minnies
 {
     private List<Minifigure> _minnies = [];
 
@@ -107,7 +106,12 @@ public partial class Minifigures
 
     private async Task ImportJson(InputFileChangeEventArgs e)
     {
-        await using var jsonStream = e.File.OpenReadStream(1024 * 1024 * 20);
+        await using var stream = e.File.OpenReadStream(1024 * 1024 * 20);
+        await ImportJson(stream);
+    }
+
+    private async Task ImportJson(Stream jsonStream)
+    {
         var model = await JsonSerializer.DeserializeAsync<MinniesSheetJsonModel>(jsonStream, JsonOptions.Value);
         var minnies = model!.Minnies.Select(x => new Minifigure
         {
