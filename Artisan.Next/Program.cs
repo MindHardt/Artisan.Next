@@ -1,3 +1,4 @@
+using Artisan.Next;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using Artisan.Next.Data.Entities;
 using Artisan.Next.EmailSender;
 using Artisan.Next.Services;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,7 +19,8 @@ builder.Host.UseSerilog((ctx, logger) => logger.ReadFrom.Configuration(ctx.Confi
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveWebAssemblyComponents();
+    .AddInteractiveWebAssemblyComponents()
+    ;
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
@@ -74,6 +77,14 @@ builder.Services.AddServices();
 
 builder.Services.AddOptions<SmtpOptions>().BindConfiguration("Smtp");
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto |
+        ForwardedHeaders.XForwardedHost;
+});
+
 var app = builder.Build();
 
 await using (var scope = app.Services.CreateAsyncScope())
@@ -81,15 +92,7 @@ await using (var scope = app.Services.CreateAsyncScope())
     await scope.ServiceProvider.GetRequiredService<DataContext>().Database.MigrateAsync();
 }
 
-if (app.Configuration["Host"] is { } host)
-{
-    app.Use((ctx, next) =>
-    {
-        ctx.Request.Headers.Host = host;
-        ctx.Request.Scheme = "https";
-        return next(ctx);
-    });
-}
+app.UseForwardedHeaders();
 
 app.UseHttpsRedirection();
 
