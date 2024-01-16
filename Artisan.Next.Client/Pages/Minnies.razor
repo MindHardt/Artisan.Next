@@ -2,10 +2,12 @@
 @using Artisan.Next.Client.JsInterop
 @using Microsoft.Extensions.Options
 @using System.Text.Json
+@using Artisan.Next.Client.Contracts
 
 @inject HttpClient HttpClient
 @inject DownloadJsInterop Download
 @inject IOptions<JsonSerializerOptions> JsonOptions
+@inject IBackendClient BackendClient
 
 <PageTitle>Минифигурки</PageTitle>
 
@@ -97,21 +99,33 @@
     }
     </tbody>
 </table>
-@foreach (var template in Templates)
-{
-    var id = $"{nameof(template)}_{template.Name}";
-    <input 
-        type="radio" 
-        class="btn-check" 
-        name="@nameof(Templates)" 
-        id="@id" 
-        autocomplete="off" 
-        checked="@(_currentTemplate == template)"
-        @onchange="@(() => SetTemplate(template))">
-    <label class="btn btn-primary" for="@id">
-        @template.Name
-    </label>
-}
+<div class="row">
+    <div class="btn-group" role="group" aria-label="Minnie sheet size">
+        @foreach (var template in Templates)
+        {
+            var id = $"{nameof(template)}_{template.Name}";
+            <input 
+                type="radio" 
+                class="btn-check" 
+                name="@nameof(Templates)" 
+                id="@id" 
+                autocomplete="off" 
+                checked="@(_currentTemplate == template)"
+                @onchange="@(() => SetTemplate(template))">
+            <label class="btn btn-primary" for="@id">
+                <i class="bi @template.IconClass"></i>
+                @template.Name
+            </label>
+        }
+        @if (_originalSvg is not null)
+        {
+            <button class="btn btn-success" @onclick="@DownloadSvg">
+                <i class="bi bi-download"></i>
+                SVG
+            </button>
+        }
+    </div>
+</div>
 
 @if (_originalSvg is null)
 {
@@ -121,25 +135,26 @@
 }
 else
 {
-    <div class="container">
-        @((MarkupString)PrepareSvg())
-    </div>
-    <button class="btn btn-lg btn-primary" @onclick="@DownloadSvg">
-        <i class="bi bi-download"></i>
-        SVG
-    </button>
+    <style>
+        svg {
+            height: 75%;
+            width: 100%;
+        }
+    </style>
+    @((MarkupString)PrepareSvg())
 }
 
 @code {
     private bool IsFilled => _minnies.Count >= _currentTemplate.Count;
-    private record Template(string Name, string Url, int Count);
+    private record Template(string Name, string Url, string IconClass, int Count);
     private static readonly Template[] Templates =
     [
-        new Template("Маленькие", "svg/minnies_small.svg", 24),
-        new Template("Большие", "svg/minnies_big.svg", 9)
+        new Template("Маленькие", "svg/minnies_small.svg", "bi-person-dash", 24),
+        new Template("Большие", "svg/minnies_big.svg", "bi-person-add", 9)
     ];
 
     private Template _currentTemplate = Templates.First();
+    private IReadOnlyCollection<ManagedFileModel> _files = [];
 
     private string? _originalSvg;
 

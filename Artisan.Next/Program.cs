@@ -1,4 +1,4 @@
-using Artisan.Next;
+using Artisan.Next.Client;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +8,11 @@ using Artisan.Next.Components.Account;
 using Artisan.Next.Data;
 using Artisan.Next.Data.Entities;
 using Artisan.Next.EmailSender;
+using Artisan.Next.Handlers;
 using Artisan.Next.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,7 +38,7 @@ builder.Services.AddAuthentication(options =>
     .AddIdentityCookies();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+                       ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
@@ -66,7 +68,8 @@ builder.Services.AddIdentityCore<ApplicationUser>(options =>
 
 builder.Services.AddDataProtection().PersistKeysToDbContext<DataContext>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.SetDefaults());
 
 builder.Services.AddAuthentication()
     .AddGoogle(googleOptions =>
@@ -78,6 +81,8 @@ builder.Services.AddAuthentication()
 
 builder.Services.AddScoped<IEmailSender<ApplicationUser>, MailKitEmailSender>();
 builder.Services.AddServices();
+builder.Services.AddHandlers();
+builder.Services.ConfigureJsonOptions();
 
 builder.Services.AddOptions<SmtpOptions>().BindConfiguration("Smtp");
 
@@ -87,6 +92,14 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
         ForwardedHeaders.XForwardedFor |
         ForwardedHeaders.XForwardedProto |
         ForwardedHeaders.XForwardedHost;
+});
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Artisan.Next API",
+        Version = "v1"
+    });
 });
 
 var app = builder.Build();
@@ -105,6 +118,12 @@ if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
     app.UseMigrationsEndPoint();
+
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Artisan.Next Api");
+    });
 }
 else
 {
@@ -114,13 +133,12 @@ else
 app.UseStaticFiles();
 app.UseAntiforgery();
 
+app.MapControllers();
+
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Home).Assembly);
 
-// Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
-
-app.MapControllers();
 
 await app.RunAsync();

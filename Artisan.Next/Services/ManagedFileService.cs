@@ -1,4 +1,5 @@
-﻿using Artisan.Next.Data;
+﻿using Artisan.Next.Client.Contracts;
+using Artisan.Next.Data;
 using Artisan.Next.Data.Entities;
 
 namespace Artisan.Next.Services;
@@ -21,12 +22,16 @@ public class ManagedFileService(IWebHostEnvironment hostEnvironment, DataContext
         await using var fs = File.Create($"{hostEnvironment.WebRootPath}/files/{uniqueName}");
         await data.CopyToAsync(fs, ct);
 
+        var now = DateTimeOffset.UtcNow;
         var managedFile = new ManagedFile
         {
             UniqueName = uniqueName,
             OriginalName = fileName,
             MimeType = mimeType,
-            Scope = scope
+            Scope = scope,
+            OwnerId = ownerId,
+            DateCreated = now,
+            DateUpdated = now
         };
         dataContext.Files.Add(managedFile);
         await dataContext.SaveChangesAsync(ct);

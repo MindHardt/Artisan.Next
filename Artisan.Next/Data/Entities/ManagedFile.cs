@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Artisan.Next.Client.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -30,10 +31,10 @@ public class ManagedFile : IEntityTypeConfiguration<ManagedFile>
         builder.HasKey(x => x.UniqueName);
         builder.HasIndex(x => new { x.OwnerId, x.Scope });
 
-        builder.Property(x => x.Scope).HasConversion<string>();
-        builder.Property(x => x.Scope).HasMaxLength(Enum.GetValues<ManagedFileScope>().Max(x => x.ToString().Length));
-        builder.Property(x => x.DateCreated).ValueGeneratedOnAdd();
-        builder.Property(x => x.DateUpdated).ValueGeneratedOnAddOrUpdate();
+        builder.Property(x => x.Scope)
+            .HasConversion<string>();
+        builder.Property(x => x.Scope)
+            .HasMaxLength(Enum.GetValues<ManagedFileScope>().Max(x => x.ToString().Length));
 
         builder.HasOne(x => x.Owner)
             .WithMany(x => x.Files)
@@ -53,11 +54,4 @@ public class ManagedFile : IEntityTypeConfiguration<ManagedFile>
             }
         ]);
     }
-}
-
-public enum ManagedFileScope
-{
-    Unknown = 0,
-    Avatar = 1,
-    MinniesSheet = 2
 }

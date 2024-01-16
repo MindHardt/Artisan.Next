@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Web;
+using Artisan.Next.Client.Contracts;
 using Microsoft.AspNetCore.Components.Forms;
 
 namespace Artisan.Next.Client.Pages;
@@ -102,6 +103,11 @@ public partial class Minnies
         jsonStream.Seek(0, SeekOrigin.Begin);
 
         await Download.DownloadAsync(jsonStream, "minnies.json");
+    }
+
+    private async Task SearchFiles(string prompt)
+    {
+        _files = await BackendClient.GetManagedFiles(new GetFilesRequest(prompt, ManagedFileScope.MinniesSheet, 0, 10));
     }
 
     private async Task ImportJson(InputFileChangeEventArgs e)
