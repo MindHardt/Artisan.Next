@@ -2,6 +2,8 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Artisan.Next.Client.Contracts;
+using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Client.Models;
 
 namespace Artisan.Next.Client;
@@ -29,13 +31,17 @@ public static class Extensions
             ? id
             : null;
 
+    public static string GetPath(this ManagedFileModel file)
+        => file.UniqueName.GetManagedFilePath();
+
     public static IServiceCollection ConfigureJsonOptions(this IServiceCollection services) =>
         services.Configure<JsonSerializerOptions>(SetDefaults);
 
     public static void SetDefaults(this JsonSerializerOptions options)
     {
         options.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
-        options.WriteIndented = true;
+        options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.PropertyNameCaseInsensitive = true;
         options.Converters.Add(new JsonStringEnumConverter());
     }
 }

@@ -1,8 +1,11 @@
-﻿using System.Text.Json;
+﻿using System.Net.Mime;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Web;
 using Artisan.Next.Client.Contracts;
+using Artisan.Next.Client.Contracts.Files;
 using Microsoft.AspNetCore.Components.Forms;
+using Refit;
 
 namespace Artisan.Next.Client.Pages;
 
@@ -10,7 +13,7 @@ public partial class Minnies
 {
     private List<Minifigure> _minnies = [];
 
-    private async Task UploadMinifigureImage(InputFileChangeEventArgs e)
+    private async Task AddMinifigureImage(InputFileChangeEventArgs e)
     {
         var minnieImage = await e.File.RequestImageFileAsync("jpeg", 512, 512);
         var minnieName = Path.GetFileNameWithoutExtension(minnieImage.Name);
@@ -88,7 +91,7 @@ public partial class Minnies
         "GxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZ" +
         "mqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A/v4ooA//2Q==";
 
-    private async Task ExportJson()
+    private async Task<Stream> GetJsonStream()
     {
         var images = _minnies
             .Select(x => x.ImageBase64)
@@ -101,13 +104,49 @@ public partial class Minnies
         var jsonStream = new MemoryStream();
         await JsonSerializer.SerializeAsync(jsonStream, export, JsonOptions.Value);
         jsonStream.Seek(0, SeekOrigin.Begin);
+        return jsonStream;
+    }
 
+    private async Task ExportJson()
+    {
+        await using var jsonStream = await GetJsonStream();
         await Download.DownloadAsync(jsonStream, "minnies.json");
     }
 
-    private async Task SearchFiles(string prompt)
+    private async Task UploadJsonFile()
     {
-        _files = await BackendClient.GetManagedFiles(new GetFilesRequest(prompt, ManagedFileScope.MinniesSheet, 0, 10));
+        await using var jsonStream = await GetJsonStream();
+
+        await BackendApi.PostFile(
+            new StreamPart(jsonStream, $"{_savedFileName}.json", MediaTypeNames.Application.Json),
+            ManagedFileScope.MinniesSheet);
+
+        await SearchFiles();
+    }
+
+    private async Task DeleteJsonFile(ManagedFileModel file)
+    {
+        await BackendApi.DeleteFile(new DeleteFileRequest
+        {
+            UniqueName = file.UniqueName
+        });
+        await SearchFiles();
+    }
+
+    private async Task SearchFiles()
+    {
+        _files = await BackendApi.GetFiles(
+            new GetFilesRequest
+            {
+                PartialName = _searchPrompt,
+                RestrictToScope = ManagedFileScope.MinniesSheet
+            });
+    }
+
+    private async Task ImportJson(ManagedFileModel file)
+    {
+        await using var stream = await HttpClient.GetStreamAsync(file.GetPath());
+        await ImportJson(stream);
     }
 
     private async Task ImportJson(InputFileChangeEventArgs e)

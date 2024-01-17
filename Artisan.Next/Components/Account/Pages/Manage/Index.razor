@@ -1,17 +1,18 @@
 ﻿@page "/Account/Manage"
 
 @using System.ComponentModel.DataAnnotations
-@using Artisan.Next.Client.Contracts
+@using Artisan.Next.Client.Contracts.Files
 @using Microsoft.AspNetCore.Identity
 @using Artisan.Next.Data.Entities
-@using Artisan.Next.Services
+@using Artisan.Next.Handlers
+@using Artisan.Next.Handlers.Files
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
 @inject NavigationManager NavigationManager
-@inject ManagedFileService ManagedFileService
+@inject PostFileHandler PostFileHandler
 
 <PageTitle>Профиль</PageTitle>
 
@@ -124,8 +125,12 @@
 
         if (Input.NewAvatar is not null)
         {
-            var file = await ManagedFileService.SaveFile(Input.NewAvatar, _user.Id, ManagedFileScope.Avatar);
-            _user.Avatar = file;
+            var file = await PostFileHandler.Handle(new PostFileRequest<IFormFile>()
+            {
+                File = Input.NewAvatar,
+                Scope = ManagedFileScope.Avatar
+            });
+            _user.AvatarName = file.UniqueName;
             await UserManager.UpdateAsync(_user);
         }
 

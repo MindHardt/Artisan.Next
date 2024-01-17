@@ -12,12 +12,21 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
-builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)});
 
-builder.Services.AddRefitClient<IBackendClient>(sp => new RefitSettings
+var backendUri = new Uri(builder.HostEnvironment.BaseAddress);
+
+builder.Services.AddScoped(_ => new HttpClient
+{
+    BaseAddress = backendUri
+});
+builder.Services.AddRefitClient<IBackendApi>(sp => new RefitSettings
 {
     ContentSerializer = new SystemTextJsonContentSerializer(
-        sp.GetRequiredService<IOptions<JsonSerializerOptions>>().Value),
+        sp.GetRequiredService<IOptions<JsonSerializerOptions>>().Value)
+})
+.ConfigureHttpClient(client =>
+{
+    client.BaseAddress = backendUri;
 });
 
 builder.Services.AddScoped<DownloadJsInterop>();

@@ -9,7 +9,6 @@ using Artisan.Next.Data;
 using Artisan.Next.Data.Entities;
 using Artisan.Next.EmailSender;
 using Artisan.Next.Handlers;
-using Artisan.Next.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi.Models;
@@ -80,7 +79,6 @@ builder.Services.AddAuthentication()
     });
 
 builder.Services.AddScoped<IEmailSender<ApplicationUser>, MailKitEmailSender>();
-builder.Services.AddServices();
 builder.Services.AddHandlers();
 builder.Services.ConfigureJsonOptions();
 

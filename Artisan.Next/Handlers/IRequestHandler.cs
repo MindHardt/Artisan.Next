@@ -8,5 +8,5 @@ public interface IRequestHandler<in TRequest, TResult>
     /// <param name="request"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
-    public Task<TResult> Handle(TRequest request, CancellationToken ct);
+    public Task<TResult> Handle(TRequest request, CancellationToken ct = default);
 }

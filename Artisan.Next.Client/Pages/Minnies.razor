@@ -3,132 +3,182 @@
 @using Microsoft.Extensions.Options
 @using System.Text.Json
 @using Artisan.Next.Client.Contracts
+@using Artisan.Next.Client.Contracts.Files
 
 @inject HttpClient HttpClient
 @inject DownloadJsInterop Download
 @inject IOptions<JsonSerializerOptions> JsonOptions
-@inject IBackendClient BackendClient
+@inject IBackendApi BackendApi
 
 <PageTitle>Минифигурки</PageTitle>
 
 <h3>Минифигурки</h3>
 
-<div class="mb-3">
-    <InputFile OnChange="@UploadMinifigureImage" class="form-control" accept="image/*" hidden id="minnie-image-input"/>
-    <button 
-        class="btn btn-lg btn-primary" 
-        disabled="@IsFilled" 
-        onclick="document.getElementById('minnie-image-input').click()">
-        <i class="bi bi-plus-circle"></i>
-        Добавить минифигурку
-    </button>
-</div>
-
 <hr/>
-<InputFile id="import-json" hidden accept="application/json" OnChange="@ImportJson"/>
-<div class="mb-2">
-    <button class="btn btn-success" onclick="document.getElementById('import-json').click()">
-        <i class="bi bi-upload"></i>
-        Импорт JSON
-    </button>
-    <button class="btn btn-success" @onclick="@ExportJson">
-        <i class="bi bi-download"></i>
-        Экспорт JSON
-    </button>
-    <button class="btn btn-danger" @onclick="@(() => _minnies.Clear())">
-        <i class="bi bi-trash"></i>
-        Очистить
-    </button>
-</div>
-@if (_minnies.Any())
-{
-    <table class="table table-sm table-striped table-hover w-50">
-        <thead>
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">Имя</th>
-            <th scope="col">Удалить</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var row in _minnies.Select((minnie, i) => (minnie, i)))
-        {
-            var isExtra = row.i >= _currentTemplate.Count;
-            <tr>
-                <th scope="row">@(row.i + 1)</th>
-                <td>
-                    <div class="form-group">
-                        <InputText @bind-Value="@row.minnie.Name" class="form-control" readonly="@isExtra" />
+
+<div class="container-fluid d-grid gap-2">
+    <div class="row row-cols-2">
+        <div class="col d-grid gap-2">
+            <h1>
+                JSON файлы
+            </h1>
+            <InputFile id="import-json" hidden accept="application/json" OnChange="@ImportJson"/>
+            <div class="btn-group w-100">
+                <button class="btn btn-success" onclick="document.getElementById('import-json').click()">
+                    <i class="bi bi-upload"></i>
+                    Импорт JSON
+                </button>
+                <button class="btn btn-success" @onclick="@ExportJson">
+                    <i class="bi bi-download"></i>
+                    Экспорт JSON
+                </button>
+            </div>
+            <AuthorizeView>
+                <Authorized>
+                    <div>
+                        <InputText class="form-control w-75" @bind-Value="@_searchPrompt" placeholder="Поиск файлов"/>
+                        <button class="btn btn-info w-25" @onclick="@SearchFiles">
+                            <i class="bi bi-search"></i>
+                        </button>
                     </div>
-                </td>
-                <td>
-                    <button class="btn btn-danger"
-                            @onclick="@(() => _minnies.RemoveAt(row.i))">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                    <button class="btn btn-primary"
-                            @onclick="@(() => _minnies.Insert(row.i + 1, row.minnie with { }))"
-                            disabled="@IsFilled">
-                        <i class="bi bi-copy"></i>
-                    </button>
-                    <button class="btn btn-secondary" 
-                            @onclick="@(() => { _minnies.RemoveAt(row.i); _minnies.Insert(0, row.minnie); })" 
-                            disabled="@(row.i == 0)">
-                        <i class="bi bi-chevron-double-up"></i>
-                    </button>
-                    <button class="btn btn-secondary" 
-                            @onclick="@(() => (_minnies[row.i - 1], _minnies[row.i]) = (_minnies[row.i], _minnies[row.i - 1]))" 
-                            disabled="@(row.i == 0)">
-                        <i class="bi bi-chevron-up"></i>
-                    </button>
-                    <button class="btn btn-secondary" 
-                            @onclick="@(() => { _minnies.RemoveAt(row.i); _minnies.Add(row.minnie); })" 
-                            disabled="@(row.i == _minnies.Count - 1)">
-                        <i class="bi bi-chevron-double-down"></i>
-                    </button>
-                    <button class="btn btn-secondary" 
-                            @onclick="@(() => (_minnies[row.i + 1], _minnies[row.i]) = (_minnies[row.i], _minnies[row.i + 1]))" 
-                            disabled="@(row.i == _minnies.Count - 1)">
-                        <i class="bi bi-chevron-down"></i>
-                    </button>
-                    @if (isExtra)
-                    {
-                        <span class="badge bg-danger" title="Текущий лист минифигурок не вмещает этот спрайт">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
-                            Не влезает
-                        </span>
-                    }
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
-}
-<div class="row">
-    <div class="btn-group" role="group" aria-label="Minnie sheet size">
-        @foreach (var template in Templates)
-        {
-            var id = $"{nameof(template)}_{template.Name}";
-            <input 
-                type="radio" 
-                class="btn-check" 
-                name="@nameof(Templates)" 
-                id="@id" 
-                autocomplete="off" 
-                checked="@(_currentTemplate == template)"
-                @onchange="@(() => SetTemplate(template))">
-            <label class="btn btn-primary" for="@id">
-                <i class="bi @template.IconClass"></i>
-                @template.Name
-            </label>
-        }
-        @if (_originalSvg is not null)
-        {
-            <button class="btn btn-success" @onclick="@DownloadSvg">
-                <i class="bi bi-download"></i>
-                SVG
+                    <table class="table table-sm table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Имя</th>
+                            <th scope="col">Редактирован</th>
+                            <th scope="col"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var row in _files.Select((file, i) => (file, i)))
+                        {
+                            <tr>
+                                <th scope="row">@(row.i + 1)</th>
+                                <td>@Path.GetFileNameWithoutExtension(row.file.OriginalName)</td>
+                                <td>
+                                    <span class="badge bg-info">
+                                        @row.file.DateUpdated.ToString("yyyy-MM-dd")
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-success" @onclick="@(() => ImportJson(row.file))">
+                                        <i class="bi bi-cloud-download"></i>
+                                    </button>
+                                    <button class="btn btn-danger" @onclick="@(() => DeleteJsonFile(row.file))">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                    <div class="container-fluid"></div>
+                    <div>
+                        <InputText class="form-control w-75" @bind-Value="@_savedFileName" placeholder="Имя сохраняемого файла"/>
+                        <button class="btn btn-success w-25" @onclick="@UploadJsonFile">
+                            <i class="bi bi-cloud-upload"></i>
+                        </button>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                Чтобы использовать облако, авторизуйтесь
+                            </h5>
+                            <a href="Account/Login" class="btn btn-lg btn-primary">
+                                <i class="bi bi-person-circle"></i>
+                                Авторизация
+                            </a>
+                        </div>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+        <div class="col d-grid gap-2">
+            <h1>
+                Минифигурки
+                <InputFile OnChange="@AddMinifigureImage" class="form-control" accept="image/*" hidden id="minnie-image-input"/>
+            </h1>
+            <button 
+                class="btn btn-primary w-100" 
+                disabled="@IsFilled" 
+                onclick="document.getElementById('minnie-image-input').click()">
+                <i class="bi bi-plus-circle"></i>
+                Добавить минифигурку
             </button>
-        }
+            @if (_minnies.Any())
+            {
+                <table class="table table-sm table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Имя</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var row in _minnies.Select((minnie, i) => (minnie, i)))
+                    {
+                        var isExtra = row.i >= _currentTemplate.Count;
+                        <tr>
+                            <th scope="row">@(row.i + 1)</th>
+                            <td>
+                                <div class="form-group">
+                                    <InputText @bind-Value="@row.minnie.Name" class="form-control" readonly="@isExtra"/>
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn btn-primary"
+                                        @onclick="@(() => _minnies.Insert(row.i + 1, row.minnie with { }))"
+                                        disabled="@IsFilled">
+                                    <i class="bi bi-copy"></i>
+                                </button>
+                                <button class="btn btn-danger"
+                                        @onclick="@(() => _minnies.RemoveAt(row.i))">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                @if (isExtra)
+                                {
+                                    <span class="badge bg-danger" title="Текущий лист минифигурок не вмещает этот спрайт">
+                                        <i class="bi bi-exclamation-triangle-fill"></i>
+                                        Не влезает
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+                <div class="container-fluid"></div>
+                <button class="btn btn-danger w-100" @onclick="@(() => _minnies.Clear())">
+                    <i class="bi bi-trash"></i>
+                    Очистить
+                </button>
+            }
+        </div>
+    </div>
+    <div class="row row-cols-1">
+        <div class="btn-group">
+            @foreach (var template in Templates)
+            {
+                var buttonClass = _currentTemplate == template
+                    ? "active"
+                    : string.Empty;
+                <button class="btn btn-outline-primary @buttonClass" @onclick="@(() => SetTemplate(template))">
+                    <i class="bi @template.IconClass"></i>
+                    @template.Name
+                </button>
+            }
+            @if (_originalSvg is not null)
+            {
+                <button class="btn btn-lg btn-success" @onclick="@DownloadSvg">
+                    <i class="bi bi-download"></i>
+                    SVG
+                </button>
+            }
+        </div>
     </div>
 </div>
 
@@ -160,6 +210,9 @@ else
 
     private Template _currentTemplate = Templates.First();
     private IReadOnlyCollection<ManagedFileModel> _files = [];
+
+    private string _searchPrompt = string.Empty;
+    private string _savedFileName = "миньки";
 
     private string? _originalSvg;
 

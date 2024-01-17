@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Artisan.Next.Client.Contracts;
+using Artisan.Next.Client.Contracts.Files;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

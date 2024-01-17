@@ -1,6 +1,8 @@
 ﻿using System.Net.Mime;
 using Artisan.Next.Client.Contracts;
+using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Handlers;
+using Artisan.Next.Handlers.Files;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,8 +23,15 @@ public class FilesController : ControllerBase
 
     [HttpPost]
     public async Task<ManagedFileModel> PostFile(
-        [FromForm] PostFileRequest request,
+        [FromForm] PostFileRequest<IFormFile> request,
         [FromServices] PostFileHandler handler,
+        CancellationToken ct)
+        => await handler.Handle(request, ct);
+
+    [HttpDelete]
+    public async Task<ManagedFileModel> DeleteFile(
+        [FromQuery] DeleteFileRequest request,
+        [FromServices] DeleteFileHandler handler,
         CancellationToken ct)
         => await handler.Handle(request, ct);
 }
