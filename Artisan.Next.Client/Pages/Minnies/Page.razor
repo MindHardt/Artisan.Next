@@ -16,11 +16,17 @@
         </div>
     </div>
     <div class="row row-cols-1">
-        <SvgRender Minnies="@_minnies" @bind-Template="_currentTemplate" />
+        <SvgRender Minnies="@_minnies" Templates="@Templates" @bind-Template="_currentTemplate" />
     </div>
 </div>
 
 @code {
     private List<Minifigure> _minnies = [];
-    private Template _currentTemplate = null!;
+    private Template _currentTemplate = Templates.First();
+
+    private static readonly Template[] Templates =
+    [
+        new Template("Маленькие", "svg/minnies_small.svg", "bi-person-dash", 24),
+        new Template("Большие", "svg/minnies_big.svg", "bi-person-add", 9)
+    ];
 }

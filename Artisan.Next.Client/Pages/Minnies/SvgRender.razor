@@ -2,7 +2,7 @@
 @inject DownloadJsInterop Download
 @using Artisan.Next.Client.JsInterop
 <div>
-    <div class="btn-group">
+    <div class="btn-group w-100">
         @foreach (var template in Templates)
         {
             var buttonClass = Template == template
@@ -42,6 +42,9 @@
 
 @code {
     [Parameter, EditorRequired]
+    public IReadOnlyCollection<Template> Templates { get; set; } = null!;
+
+    [Parameter, EditorRequired]
     public Template Template { get; set; } = null!;
     [Parameter, EditorRequired]
     public EventCallback<Template> TemplateChanged { get; set; }
@@ -50,12 +53,6 @@
     public List<Minifigure> Minnies { get; set; } = null!; 
 
     private string? _originalSvg;
-
-    private static readonly Template[] Templates =
-    [
-        new Template("Маленькие", "svg/minnies_small.svg", "bi-person-dash", 24),
-        new Template("Большие", "svg/minnies_big.svg", "bi-person-add", 9)
-    ];
 
     protected override async Task OnInitializedAsync()
     {

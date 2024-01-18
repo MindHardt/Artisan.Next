@@ -67,7 +67,7 @@
     [Parameter, EditorRequired]
     public Template Template { get; set; } = null!;
 
-    private bool IsFilled => Minnies?.Count >= Template?.Count;
+    private bool IsFilled => Minnies.Count >= Template.Count;
 
     private async Task AddMinifigureImage(InputFileChangeEventArgs e)
     {

@@ -12,12 +12,18 @@ public interface IBackendApi
     [Multipart]
     [Post("/files")]
     protected Task<ManagedFileModel> PostFile(
-        [AliasAs(nameof(PostFileRequest<int>.File))] StreamPart file,
-        [AliasAs(nameof(PostFileRequest<int>.Scope))] string scope,
+        [AliasAs(nameof(PostFileRequest<StreamPart>.File))] StreamPart file,
+        [AliasAs(nameof(PostFileRequest<StreamPart>.Scope))] string scope,
         CancellationToken ct = default);
 
+
     public Task<ManagedFileModel> PostFile(PostFileRequest<StreamPart> request, CancellationToken ct = default)
-        => PostFile(request.File, request.Scope.ToString(), ct);
+    {
+        var file = new StreamPart(request.File.Value, request.File.FileName, request.File.ContentType,
+            nameof(request.File));
+
+        return PostFile(file, request.Scope.ToString(), ct);
+    }
 
     [Delete("/files")]
     public Task<ManagedFileModel> DeleteFile(

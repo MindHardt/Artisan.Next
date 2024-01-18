@@ -10,6 +10,7 @@
 @inject DownloadJsInterop Download
 @inject IOptions<JsonSerializerOptions> JsonOptions
 @inject IBackendApi BackendApi
+@inject AuthenticationStateProvider Auth
 
 <div>
     <h1>
@@ -101,6 +102,15 @@
     private string _searchPrompt = string.Empty;
     private string _savedFileName = "миньки";
 
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await Auth.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated is true)
+        {
+            await SearchFiles();
+        }
+    }
+
     private async Task<Stream> GetJsonStream()
     {
         var images = Minnies
@@ -131,7 +141,7 @@
         await BackendApi.PostFile(
             new PostFileRequest<StreamPart>
             {
-                File = new StreamPart(jsonStream, fileName, "application/json", fileName),
+                File = new StreamPart(jsonStream, fileName, "application/json"),
                 Scope = ManagedFileScope.MinniesSheet
             });
 

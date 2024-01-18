@@ -16,7 +16,7 @@ public class PostFileHandler(
         var userId = httpContextAccessor.HttpContext?.User.GetUserId()!.Value;
         await using var data = request.File.OpenReadStream();
 
-        var uniqueName = GetUniqueName(request.File.Name);
+        var uniqueName = GetUniqueName(request.File.FileName);
         await using var fs = File.Create($"{hostEnvironment.WebRootPath}/files/{uniqueName}");
         await data.CopyToAsync(fs, ct);
 
@@ -24,7 +24,7 @@ public class PostFileHandler(
         var file = new ManagedFile
         {
             UniqueName = uniqueName,
-            OriginalName = request.File.Name,
+            OriginalName = request.File.FileName,
             MimeType = request.File.ContentType,
             Scope = request.Scope,
             OwnerId = userId,
