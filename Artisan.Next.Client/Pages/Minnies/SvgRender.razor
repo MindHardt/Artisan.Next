@@ -1,0 +1,80 @@
+﻿@inject HttpClient HttpClient
+@inject DownloadJsInterop Download
+@using Artisan.Next.Client.JsInterop
+<div>
+    <div class="btn-group">
+        @foreach (var template in Templates)
+        {
+            var buttonClass = Template == template
+                ? "active"
+                : string.Empty;
+            <button class="btn btn-outline-primary @buttonClass" @onclick="@(() => SetTemplate(template))">
+                <i class="bi @template.IconClass"></i>
+                @template.Name
+            </button>
+        }
+        @if (_originalSvg is not null)
+        {
+            <button class="btn btn-lg btn-success" @onclick="@DownloadSvg">
+                <i class="bi bi-download"></i>
+                SVG
+            </button>
+        }
+    </div>
+    
+    @if (_originalSvg is null)
+    {
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    }
+    else
+    {
+        <style>
+            svg {
+                height: 75%;
+                width: 100%;
+            }
+        </style>
+        @((MarkupString)PrepareSvg())
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Template Template { get; set; } = null!;
+    [Parameter, EditorRequired]
+    public EventCallback<Template> TemplateChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public List<Minifigure> Minnies { get; set; } = null!; 
+
+    private string? _originalSvg;
+
+    private static readonly Template[] Templates =
+    [
+        new Template("Маленькие", "svg/minnies_small.svg", "bi-person-dash", 24),
+        new Template("Большие", "svg/minnies_big.svg", "bi-person-add", 9)
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        Template = Templates.First();
+        await TemplateChanged.InvokeAsync(Template);
+        await LoadOriginalSvg();
+    }
+
+    private async Task DownloadSvg()
+        => await Download.DownloadAsync(PrepareSvg(), "minnies.svg");
+
+    private async Task SetTemplate(Template template)
+    {
+        Template = template;
+        await LoadOriginalSvg();
+    }
+
+    private async Task LoadOriginalSvg()
+    {
+        _originalSvg = TransformOriginalSvg(await HttpClient.GetStringAsync(Template.Url));
+    }
+}

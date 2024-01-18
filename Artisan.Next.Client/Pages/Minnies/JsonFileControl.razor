@@ -1,0 +1,187 @@
+﻿@using Artisan.Next.Client.Contracts.Files
+@using Refit
+@using System.Text.Json
+@using System.Net.Mime
+@using Artisan.Next.Client.Contracts
+@using Artisan.Next.Client.JsInterop
+@using Microsoft.Extensions.Options
+
+@inject HttpClient HttpClient
+@inject DownloadJsInterop Download
+@inject IOptions<JsonSerializerOptions> JsonOptions
+@inject IBackendApi BackendApi
+
+<div>
+    <h1>
+        JSON файлы
+    </h1>
+    <InputFile id="import-json" hidden accept="application/json" OnChange="@ImportJson"/>
+    <div class="btn-group w-100">
+        <button class="btn btn-success" onclick="document.getElementById('import-json').click()">
+            <i class="bi bi-upload"></i>
+            Импорт JSON
+        </button>
+        <button class="btn btn-success" @onclick="@ExportJson">
+            <i class="bi bi-download"></i>
+            Экспорт JSON
+        </button>
+    </div>
+    <AuthorizeView>
+        <Authorized>
+            <div>
+                <InputText class="form-control w-75" @bind-Value="@_searchPrompt" placeholder="Поиск файлов"/>
+                <button class="btn btn-info w-25" @onclick="@SearchFiles">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+            <table class="table table-sm table-striped table-hover">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Имя</th>
+                    <th scope="col">Редактирован</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var row in _files.Select((file, i) => (file, i)))
+                {
+                    <tr>
+                        <th scope="row">@(row.i + 1)</th>
+                        <td>@Path.GetFileNameWithoutExtension(row.file.OriginalName)</td>
+                        <td>
+                            <span class="badge bg-info">
+                                @row.file.DateUpdated.ToString("yyyy-MM-dd")
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-success" @onclick="@(() => ImportJson(row.file))">
+                                <i class="bi bi-cloud-download"></i>
+                            </button>
+                            <button class="btn btn-danger" @onclick="@(() => DeleteJsonFile(row.file))">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            <div class="align-self-stretch"></div>
+            <div>
+                <InputText class="form-control w-75" @bind-Value="@_savedFileName" placeholder="Имя сохраняемого файла"/>
+                <button class="btn btn-success w-25" @onclick="@UploadJsonFile">
+                    <i class="bi bi-cloud-upload"></i>
+                </button>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Чтобы использовать облако, авторизуйтесь
+                    </h5>
+                    <a href="Account/Login" class="btn btn-lg btn-primary">
+                        <i class="bi bi-person-circle"></i>
+                        Авторизация
+                    </a>
+                </div>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public List<Minifigure> Minnies { get; set; } = null!;
+    [Parameter, EditorRequired]
+    public EventCallback<List<Minifigure>> MinniesChanged { get; set; }
+
+    private IReadOnlyCollection<ManagedFileModel> _files = [];
+
+    private string _searchPrompt = string.Empty;
+    private string _savedFileName = "миньки";
+
+    private async Task<Stream> GetJsonStream()
+    {
+        var images = Minnies
+            .Select(x => x.ImageBase64)
+            .Distinct()
+            .ToArray();
+        var minnies = Minnies
+            .Select(x => new MinnieJsonModel(Array.IndexOf(images, x.ImageBase64), x.Name))
+            .ToArray();
+        var export = new MinniesSheetJsonModel(minnies, images);
+        var jsonStream = new MemoryStream();
+        await JsonSerializer.SerializeAsync(jsonStream, export, JsonOptions.Value);
+        jsonStream.Seek(0, SeekOrigin.Begin);
+        return jsonStream;
+    }
+
+    private async Task ExportJson()
+    {
+        await using var jsonStream = await GetJsonStream();
+        await Download.DownloadAsync(jsonStream, "minnies.json");
+    }
+
+    private async Task UploadJsonFile()
+    {
+        await using var jsonStream = await GetJsonStream();
+
+        var fileName = $"{_savedFileName}.json";
+        await BackendApi.PostFile(
+            new PostFileRequest<StreamPart>
+            {
+                File = new StreamPart(jsonStream, fileName, "application/json", fileName),
+                Scope = ManagedFileScope.MinniesSheet
+            });
+
+        await SearchFiles();
+    }
+
+    private async Task DeleteJsonFile(ManagedFileModel file)
+    {
+        await BackendApi.DeleteFile(new DeleteFileRequest
+        {
+            UniqueName = file.UniqueName
+        });
+        await SearchFiles();
+    }
+
+    private async Task SearchFiles()
+    {
+        _files = await BackendApi.GetFiles(
+            new GetFilesRequest
+            {
+                PartialName = _searchPrompt,
+                RestrictToScope = ManagedFileScope.MinniesSheet
+            });
+    }
+
+    private async Task ImportJson(ManagedFileModel file)
+    {
+        await using var stream = await HttpClient.GetStreamAsync(file.GetPath());
+        await ImportJson(stream);
+    }
+
+    private async Task ImportJson(InputFileChangeEventArgs e)
+    {
+        await using var stream = e.File.OpenReadStream(1024 * 1024 * 20);
+        await ImportJson(stream);
+    }
+
+    private async Task ImportJson(Stream jsonStream)
+    {
+        var model = await JsonSerializer.DeserializeAsync<MinniesSheetJsonModel>(jsonStream, JsonOptions.Value);
+        var newMinnies = model!.Minnies.Select(x => new Minifigure
+        {
+            ImageBase64 = model.Images[x.ImageIndex],
+            Name = x.Name
+        });
+        Minnies.AddRange(newMinnies);
+
+        await MinniesChanged.InvokeAsync(Minnies);
+    }
+
+    private record MinnieJsonModel(int ImageIndex, string Name);
+    private record MinniesSheetJsonModel(MinnieJsonModel[] Minnies, string[] Images);
+}

@@ -16,8 +16,8 @@ public interface IBackendApi
         [AliasAs(nameof(PostFileRequest<int>.Scope))] string scope,
         CancellationToken ct = default);
 
-    public Task<ManagedFileModel> PostFile(StreamPart file, ManagedFileScope scope, CancellationToken ct = default)
-        => PostFile(file, scope.ToString(), ct);
+    public Task<ManagedFileModel> PostFile(PostFileRequest<StreamPart> request, CancellationToken ct = default)
+        => PostFile(request.File, request.Scope.ToString(), ct);
 
     [Delete("/files")]
     public Task<ManagedFileModel> DeleteFile(

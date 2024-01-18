@@ -1,0 +1,26 @@
+﻿@page "/Minnies"
+
+<PageTitle>Минифигурки</PageTitle>
+
+<h3>Минифигурки</h3>
+
+<hr/>
+
+<div class="container-fluid d-grid gap-2">
+    <div class="row row-cols-2">
+        <div class="col d-grid gap-2">
+            <JsonFileControl @bind-Minnies="@_minnies" />
+        </div>
+        <div class="col d-grid gap-2">
+            <MinniesList Minnies="@_minnies" Template="_currentTemplate" />
+        </div>
+    </div>
+    <div class="row row-cols-1">
+        <SvgRender Minnies="@_minnies" @bind-Template="_currentTemplate" />
+    </div>
+</div>
+
+@code {
+    private List<Minifigure> _minnies = [];
+    private Template _currentTemplate = null!;
+}

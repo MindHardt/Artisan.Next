@@ -1,0 +1,90 @@
+﻿<div>
+    <h1>
+        Минифигурки
+        <InputFile OnChange="@AddMinifigureImage" class="form-control" accept="image/*" hidden id="minnie-image-input"/>
+    </h1>
+    <button 
+        class="btn btn-primary w-100" 
+        disabled="@IsFilled" 
+        onclick="document.getElementById('minnie-image-input').click()">
+        <i class="bi bi-plus-circle"></i>
+        Добавить минифигурку
+    </button>
+    @if (Minnies.Any())
+    {
+        <table class="table table-sm table-striped table-hover">
+            <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">Имя</th>
+                <th scope="col"></th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var row in Minnies.Select((minnie, i) => (minnie, i)))
+            {
+                var isExtra = row.i >= Template.Count;
+                <tr>
+                    <th scope="row">@(row.i + 1)</th>
+                    <td>
+                        <div class="form-group">
+                            <InputText @bind-Value="@row.minnie.Name" class="form-control" readonly="@isExtra"/>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-primary"
+                                @onclick="@(() => Minnies.Insert(row.i + 1, row.minnie with { }))"
+                                disabled="@IsFilled">
+                            <i class="bi bi-copy"></i>
+                        </button>
+                        <button class="btn btn-danger"
+                                @onclick="@(() => Minnies.RemoveAt(row.i))">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        @if (isExtra)
+                        {
+                            <span class="badge bg-danger" title="Текущий лист минифигурок не вмещает этот спрайт">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                Не влезает
+                            </span>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        <div class="align-self-stretch"></div>
+        <button class="btn btn-danger w-100" @onclick="@(() => Minnies.Clear())">
+            <i class="bi bi-trash"></i>
+            Очистить
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public List<Minifigure> Minnies { get; set; } = null!;
+    [Parameter, EditorRequired]
+    public Template Template { get; set; } = null!;
+
+    private bool IsFilled => Minnies?.Count >= Template?.Count;
+
+    private async Task AddMinifigureImage(InputFileChangeEventArgs e)
+    {
+        var minnieImage = await e.File.RequestImageFileAsync("jpeg", 512, 512);
+        var minnieName = Path.GetFileNameWithoutExtension(minnieImage.Name);
+
+        await using var imageStream = minnieImage.OpenReadStream(1024 * 1024 * 2);
+        var base64Stream = new MemoryStream();
+        await imageStream.CopyToAsync(base64Stream);
+
+        var base64String = Convert.ToBase64String(base64Stream.ToArray());
+        var minnie = new Minifigure
+        {
+            Name = minnieName,
+            ImageBase64 = base64String
+        };
+        Minnies.Add(minnie);
+    }
+
+}

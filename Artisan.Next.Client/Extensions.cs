@@ -2,7 +2,6 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Artisan.Next.Client.Contracts;
 using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Client.Models;
 
