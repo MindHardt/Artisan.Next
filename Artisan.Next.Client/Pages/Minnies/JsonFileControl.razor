@@ -137,7 +137,7 @@
     {
         if (InitialFileUrl is not null)
         {
-            InitiateJsonImport(() => BackendApi.ReadFile(InitialFileUrl));
+            InitiateJsonImport(() => BackendApi.ReadFile($"files/{InitialFileUrl}"));
         }
 
         var authState = await Auth.GetAuthenticationStateAsync();
