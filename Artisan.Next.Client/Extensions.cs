@@ -47,7 +47,6 @@ public static class Extensions
         options.Converters.Add(new JsonStringEnumConverter());
     }
 
-    [DoesNotReturn]
     public static void NavigateToLogin(this NavigationManager navManager, IWebAssemblyHostEnvironment hostEnvironment)
     {
         var url = hostEnvironment.IsDevelopment()

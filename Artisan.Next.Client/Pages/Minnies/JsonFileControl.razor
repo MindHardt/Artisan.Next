@@ -7,7 +7,6 @@
 @using Microsoft.AspNetCore.Components.WebAssembly.Hosting
 @using Microsoft.Extensions.Options
 
-@inject HttpClient HttpClient
 @inject DownloadJsInterop Download
 @inject IOptions<JsonSerializerOptions> JsonOptions
 @inject IBackendApi BackendApi
@@ -19,10 +18,13 @@
     <div class="row mb-3">
         <h1 class="col">
             JSON файлы
+            <div class="spinner-border text-success" role="status" hidden="@_isLoaded">
+              <span class="visually-hidden">Loading...</span>
+            </div>
         </h1>
     </div>
     <div class="row mb-3">
-        <InputFile id="import-json" hidden accept="application/json" OnChange="@ImportJson"/>
+        <InputFile id="import-json" hidden accept="application/json" OnChange="@InitiateJsonImport"/>
         <div class="btn-group col p-0 w-100">
             <button class="btn btn-success" onclick="document.getElementById('import-json').click()">
                 <i class="bi bi-upload"></i>
@@ -59,16 +61,21 @@
                     <tbody>
                     @foreach (var row in _files.Select((file, i) => (file, i)))
                     {
+                        var baseUri = new string(NavigationManager.Uri.TakeWhile(x => x is not '?').ToArray());
+                        var shareUri = $"{baseUri}?{nameof(Page.Shared)}={Uri.EscapeDataString(row.file.UniqueName)}";
                         <tr>
                             <th scope="row">@(row.i + 1)</th>
                             <td>@Path.GetFileNameWithoutExtension(row.file.OriginalName)</td>
                             <td>
                                 <span class="badge bg-info">
-                                    @row.file.DateUpdated.ToLocalTime().ToString("yyyy-MM-dd hh:mm")
+                                    @row.file.DateUpdated.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
                                 </span>
                             </td>
                             <td>
-                                <button class="btn btn-success" @onclick="@(() => ImportJson(row.file))">
+                                <a class="btn btn-outline-primary" href="@shareUri" target="_blank">
+                                    <i class="bi bi-share"></i>
+                                </a>
+                                <button class="btn btn-success" @onclick="@(() => InitiateJsonImport(row.file))">
                                     <i class="bi bi-cloud-download"></i>
                                 </button>
                                 <button class="btn btn-danger" @onclick="@(() => DeleteJsonFile(row.file))">
@@ -112,6 +119,10 @@
 </div>
 
 @code {
+    private bool _isLoaded = false;
+
+    [Parameter]
+    public string? InitialFileUrl { get; set; }
     [Parameter, EditorRequired]
     public List<Minifigure> Minnies { get; set; } = null!;
     [Parameter, EditorRequired]
@@ -124,11 +135,18 @@
 
     protected override async Task OnInitializedAsync()
     {
+        if (InitialFileUrl is not null)
+        {
+            InitiateJsonImport(() => BackendApi.ReadFile(InitialFileUrl));
+        }
+
         var authState = await Auth.GetAuthenticationStateAsync();
         if (authState.User.Identity?.IsAuthenticated is true)
         {
             await SearchFiles();
         }
+
+        _isLoaded = true;
     }
 
     private async Task<Stream> GetJsonStream()
@@ -150,7 +168,11 @@
     private async Task ExportJson()
     {
         await using var jsonStream = await GetJsonStream();
-        await Download.DownloadAsync(jsonStream, "minnies.json");
+        var fileName = string.IsNullOrEmpty(_savedFileName)
+            ? "minnies.json"
+            : $"{_savedFileName}.json";
+
+        await Download.DownloadAsync(jsonStream, fileName);
     }
 
     private async Task UploadJsonFile()
@@ -188,29 +210,32 @@
             });
     }
 
-    private async Task ImportJson(ManagedFileModel file)
-    {
-        await using var stream = await HttpClient.GetStreamAsync(file.GetPath());
-        await ImportJson(stream);
-    }
+    private void InitiateJsonImport(ManagedFileModel file)
+        => InitiateJsonImport(() => BackendApi.ReadFile(file));
 
-    private async Task ImportJson(InputFileChangeEventArgs e)
-    {
-        await using var stream = e.File.OpenReadStream(1024 * 1024 * 20);
-        await ImportJson(stream);
-    }
+    private void InitiateJsonImport(InputFileChangeEventArgs e)
+        => InitiateJsonImport(() => Task.FromResult(e.File.OpenReadStream(1024 * 1024 * 20)));
 
-    private async Task ImportJson(Stream jsonStream)
+    private void InitiateJsonImport(Func<Task<Stream>> streamTask)
     {
-        var model = await JsonSerializer.DeserializeAsync<MinniesSheetJsonModel>(jsonStream, JsonOptions.Value);
-        var newMinnies = model!.Minnies.Select(x => new Minifigure
+        _isLoaded = false;
+        StateHasChanged();
+
+        _ = Task.Factory.StartNew(async () =>
         {
-            ImageBase64 = model.Images[x.ImageIndex],
-            Name = x.Name
-        });
-        Minnies.AddRange(newMinnies);
+            await using var jsonStream = await streamTask();
+            var model = await JsonSerializer.DeserializeAsync<MinniesSheetJsonModel>(jsonStream, JsonOptions.Value);
+            var newMinnies = model!.Minnies.Select(x => new Minifigure
+            {
+                ImageBase64 = model.Images[x.ImageIndex],
+                Name = x.Name
+            });
+            Minnies.AddRange(newMinnies);
 
-        await MinniesChanged.InvokeAsync(Minnies);
+            _isLoaded = true;
+            await MinniesChanged.InvokeAsync(Minnies);
+
+        }, TaskCreationOptions.LongRunning);
     }
 
     private record MinnieJsonModel(int ImageIndex, string Name);
