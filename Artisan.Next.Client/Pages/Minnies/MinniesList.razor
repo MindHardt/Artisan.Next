@@ -44,12 +44,12 @@
                         </td>
                         <td>
                             <button class="btn btn-primary"
-                                    @onclick="@(() => Minnies.Insert(row.i + 1, row.minnie with { }))"
+                                    @onclick="@(() => CopyMinnie(row.minnie, row.i))"
                                     disabled="@IsFilled">
                                 <i class="bi bi-copy"></i>
                             </button>
                             <button class="btn btn-danger"
-                                    @onclick="@(() => Minnies.RemoveAt(row.i))">
+                                    @onclick="@(() => RemoveMinnie(row.i))">
                                 <i class="bi bi-trash"></i>
                             </button>
                             @if (isExtra)
@@ -67,7 +67,7 @@
         </div>
         <div class="row mb-3">
             <div class="btn-group col p-0 w-100">
-                <button class="btn btn-danger" @onclick="@(() => Minnies.Clear())">
+                <button class="btn btn-danger" @onclick="@ClearMinnies">
                     <i class="bi bi-trash"></i>
                     Очистить
                 </button>
@@ -120,6 +120,24 @@
             ImageBase64 = base64String
         };
         Minnies.Add(minnie);
+        await MinniesChanged.InvokeAsync(Minnies);
+    }
+
+    private async Task CopyMinnie(Minifigure minnie, int index)
+    {
+        Minnies.Insert(index + 1, minnie with { });
+        await MinniesChanged.InvokeAsync(Minnies);
+    }
+
+    private async Task RemoveMinnie(int index)
+    {
+        Minnies.RemoveAt(index);
+        await MinniesChanged.InvokeAsync(Minnies);
+    }
+
+    private async Task ClearMinnies()
+    {
+        Minnies.Clear();
         await MinniesChanged.InvokeAsync(Minnies);
     }
 }
