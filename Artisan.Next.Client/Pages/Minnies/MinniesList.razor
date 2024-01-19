@@ -120,5 +120,6 @@
             ImageBase64 = base64String
         };
         Minnies.Add(minnie);
+        await MinniesChanged.InvokeAsync(Minnies);
     }
 }
