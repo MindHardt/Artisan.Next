@@ -135,18 +135,20 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (InitialFileUrl is not null)
-        {
-            InitiateJsonImport(() => BackendApi.ReadFile($"files/{InitialFileUrl}"));
-        }
-
         var authState = await Auth.GetAuthenticationStateAsync();
         if (authState.User.Identity?.IsAuthenticated is true)
         {
             await SearchFiles();
         }
 
-        _isLoaded = true;
+        if (InitialFileUrl is not null)
+        {
+            InitiateJsonImport(() => BackendApi.ReadFile($"files/{InitialFileUrl}"));
+        }
+        else
+        {
+            _isLoaded = true;
+        }
     }
 
     private async Task<Stream> GetJsonStream()
