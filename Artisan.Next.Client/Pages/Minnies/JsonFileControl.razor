@@ -4,6 +4,7 @@
 @using System.Net.Mime
 @using Artisan.Next.Client.Contracts
 @using Artisan.Next.Client.JsInterop
+@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
 @using Microsoft.Extensions.Options
 
 @inject HttpClient HttpClient
@@ -12,6 +13,7 @@
 @inject IBackendApi BackendApi
 @inject AuthenticationStateProvider Auth
 @inject NavigationManager NavigationManager
+@inject IWebAssemblyHostEnvironment Environment
 
 <div class="container">
     <div class="row mb-3">
@@ -98,7 +100,7 @@
                         <h5 class="card-title">
                             Чтобы использовать облако, авторизуйтесь
                         </h5>
-                        <button class="btn btn-lg btn-primary" @onclick="NavigationManager.NavigateToLogin">
+                        <button class="btn btn-lg btn-primary" @onclick="() => NavigationManager.NavigateToLogin(Environment)">
                             <i class="bi bi-person-circle"></i>
                             Авторизация
                         </button>

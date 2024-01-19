@@ -12,6 +12,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
+builder.Services.AddMemoryCache();
 
 var backendUri = new Uri(builder.HostEnvironment.BaseAddress);
 

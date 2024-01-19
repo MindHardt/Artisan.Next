@@ -1,6 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+@inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager
+@inject IWebAssemblyHostEnvironment Environment
 
 <!--suppress CssUnusedSymbol -->
 <style>
@@ -34,7 +36,7 @@
                     </div>
                 </Authorized>
                 <NotAuthorized>
-                    <button class="btn btn-dark h-75" @onclick="@NavigationManager.NavigateToLogin">
+                    <button class="btn btn-dark h-75" @onclick="@(() => NavigationManager.NavigateToLogin(Environment))">
                         <i class="bi bi-person-circle"></i>
                         Авторизация
                     </button>

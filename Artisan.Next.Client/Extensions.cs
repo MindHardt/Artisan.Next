@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Client.Models;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 namespace Artisan.Next.Client;
 
@@ -47,6 +48,12 @@ public static class Extensions
     }
 
     [DoesNotReturn]
-    public static void NavigateToLogin(this NavigationManager navManager)
-        => navManager.NavigateTo($"Account/Login?returnUrl={Uri.EscapeDataString(navManager.Uri.Replace("https", "http"))}", forceLoad: true);
+    public static void NavigateToLogin(this NavigationManager navManager, IWebAssemblyHostEnvironment hostEnvironment)
+    {
+        var url = hostEnvironment.IsDevelopment()
+            ? navManager.Uri
+            : navManager.Uri.Replace("https", "http");
+
+        navManager.NavigateTo($"Account/Login?returnUrl={Uri.EscapeDataString(url)}", forceLoad: true);
+    }
 }

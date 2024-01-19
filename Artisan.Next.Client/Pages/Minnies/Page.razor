@@ -1,4 +1,5 @@
 ﻿@page "/Minnies"
+@using System.Collections.ObjectModel
 
 <PageTitle>Минифигурки</PageTitle>
 
@@ -12,7 +13,7 @@
             <JsonFileControl @bind-Minnies="@_minnies" />
         </div>
         <div class="col-md-6 gap-2">
-            <MinniesList Minnies="@_minnies" Template="_currentTemplate" />
+            <MinniesList @bind-Minnies="@_minnies" Template="_currentTemplate" />
         </div>
     </div>
     <div class="row row-cols-1">

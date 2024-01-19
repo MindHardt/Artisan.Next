@@ -1,4 +1,8 @@
-﻿<div class="container">
+﻿@using Microsoft.Extensions.Caching.Memory
+@inject IMemoryCache Cache
+@inject ILogger<MinniesList> Logger
+
+<div class="container">
     <div class="row mb-3">
         <h1 class="col">
             Минифигурки
@@ -76,9 +80,29 @@
     [Parameter, EditorRequired]
     public List<Minifigure> Minnies { get; set; } = null!;
     [Parameter, EditorRequired]
+    public EventCallback<List<Minifigure>> MinniesChanged { get; set; }
+    [Parameter, EditorRequired]
     public Template Template { get; set; } = null!;
 
     private bool IsFilled => Minnies.Count >= Template.Count;
+    private const string CacheKey = "Minnies";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        Cache.Set(CacheKey, Minnies);
+        Logger.LogInformation("Cached minnies with {Count} entries", Minnies.Count);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Cache.Get<List<Minifigure>>(CacheKey) is { Count: > 0 } cachedMinnies && 
+            cachedMinnies.SequenceEqual(Minnies) is false)
+        {
+            Logger.LogInformation("Retrieved {Count} minnies from cache", cachedMinnies.Count);
+            Minnies = cachedMinnies;
+            await MinniesChanged.InvokeAsync(Minnies);
+        }
+    }
 
     private async Task AddMinifigureImage(InputFileChangeEventArgs e)
     {
@@ -97,5 +121,4 @@
         };
         Minnies.Add(minnie);
     }
-
 }
