@@ -107,6 +107,12 @@ await using (var scope = app.Services.CreateAsyncScope())
     await scope.ServiceProvider.GetRequiredService<DataContext>().Database.MigrateAsync();
 }
 
+app.Use((ctx, next) =>
+{
+    ctx.Request.Scheme = "https";
+    return next();
+});
+
 app.UseForwardedHeaders();
 
 app.UseHttpsRedirection();
