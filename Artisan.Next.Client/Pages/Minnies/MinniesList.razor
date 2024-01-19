@@ -106,7 +106,7 @@
 
     private async Task AddMinifigureImage(InputFileChangeEventArgs e)
     {
-        var minnieImage = await e.File.RequestImageFileAsync("jpeg", 512, 512);
+        var minnieImage = await e.File.RequestImageFileAsync("jpeg", 1024, 1024);
         var minnieName = Path.GetFileNameWithoutExtension(minnieImage.Name);
 
         await using var imageStream = minnieImage.OpenReadStream(1024 * 1024 * 2);
