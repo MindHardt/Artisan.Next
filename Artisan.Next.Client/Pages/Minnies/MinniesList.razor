@@ -1,63 +1,74 @@
-﻿<div>
-    <h1>
-        Минифигурки
-        <InputFile OnChange="@AddMinifigureImage" class="form-control" accept="image/*" hidden id="minnie-image-input"/>
-    </h1>
-    <button 
-        class="btn btn-primary w-100" 
-        disabled="@IsFilled" 
-        onclick="document.getElementById('minnie-image-input').click()">
-        <i class="bi bi-plus-circle"></i>
-        Добавить минифигурку
-    </button>
+﻿<div class="container">
+    <div class="row mb-3">
+        <h1 class="col">
+            Минифигурки
+            <InputFile OnChange="@AddMinifigureImage" class="form-control" accept="image/*" hidden id="minnie-image-input"/>
+        </h1>
+    </div>
+    <div class="row mb-3">
+        <div class="btn-group col p-0 w-100">
+            <button
+                class="btn btn-primary"
+                disabled="@IsFilled"
+                onclick="document.getElementById('minnie-image-input').click()">
+                <i class="bi bi-plus-circle"></i>
+                Добавить минифигурку
+            </button>
+        </div>
+    </div>
     @if (Minnies.Any())
     {
-        <table class="table table-sm table-striped table-hover">
-            <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">Имя</th>
-                <th scope="col"></th>
-            </tr>
-            </thead>
-            <tbody>
-            @foreach (var row in Minnies.Select((minnie, i) => (minnie, i)))
-            {
-                var isExtra = row.i >= Template.Count;
+        <div class="row mb-3">
+            <table class="table table-sm table-striped table-hover col">
+                <thead>
                 <tr>
-                    <th scope="row">@(row.i + 1)</th>
-                    <td>
-                        <div class="form-group">
-                            <InputText @bind-Value="@row.minnie.Name" class="form-control" readonly="@isExtra"/>
-                        </div>
-                    </td>
-                    <td>
-                        <button class="btn btn-primary"
-                                @onclick="@(() => Minnies.Insert(row.i + 1, row.minnie with { }))"
-                                disabled="@IsFilled">
-                            <i class="bi bi-copy"></i>
-                        </button>
-                        <button class="btn btn-danger"
-                                @onclick="@(() => Minnies.RemoveAt(row.i))">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                        @if (isExtra)
-                        {
-                            <span class="badge bg-danger" title="Текущий лист минифигурок не вмещает этот спрайт">
-                                <i class="bi bi-exclamation-triangle-fill"></i>
-                                Не влезает
-                            </span>
-                        }
-                    </td>
+                    <th scope="col">#</th>
+                    <th scope="col">Имя</th>
+                    <th scope="col"></th>
                 </tr>
-            }
-            </tbody>
-        </table>
-        <div class="align-self-stretch"></div>
-        <button class="btn btn-danger w-100" @onclick="@(() => Minnies.Clear())">
-            <i class="bi bi-trash"></i>
-            Очистить
-        </button>
+                </thead>
+                <tbody>
+                @foreach (var row in Minnies.Select((minnie, i) => (minnie, i)))
+                {
+                    var isExtra = row.i >= Template.Count;
+                    <tr>
+                        <th scope="row">@(row.i + 1)</th>
+                        <td>
+                            <div class="form-group">
+                                <InputText @bind-Value="@row.minnie.Name" class="form-control" readonly="@isExtra"/>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-primary"
+                                    @onclick="@(() => Minnies.Insert(row.i + 1, row.minnie with { }))"
+                                    disabled="@IsFilled">
+                                <i class="bi bi-copy"></i>
+                            </button>
+                            <button class="btn btn-danger"
+                                    @onclick="@(() => Minnies.RemoveAt(row.i))">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            @if (isExtra)
+                            {
+                                <span class="badge bg-danger" title="Текущий лист минифигурок не вмещает этот спрайт">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                    Не влезает
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <div class="row mb-3">
+            <div class="btn-group col p-0 w-100">
+                <button class="btn btn-danger" @onclick="@(() => Minnies.Clear())">
+                    <i class="bi bi-trash"></i>
+                    Очистить
+                </button>
+            </div>
+        </div>
     }
 </div>
 

@@ -1,9 +1,11 @@
-﻿using System.Security.Claims;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Client.Models;
+using Microsoft.AspNetCore.Components;
 
 namespace Artisan.Next.Client;
 
@@ -43,4 +45,8 @@ public static class Extensions
         options.PropertyNameCaseInsensitive = true;
         options.Converters.Add(new JsonStringEnumConverter());
     }
+
+    [DoesNotReturn]
+    public static void NavigateToLogin(this NavigationManager navManager)
+        => navManager.NavigateTo($"Account/Login?returnUrl={Uri.EscapeDataString(navManager.Uri)}", forceLoad: true);
 }

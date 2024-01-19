@@ -8,7 +8,7 @@
             var buttonClass = Template == template
                 ? "active"
                 : string.Empty;
-            <button class="btn btn-outline-primary @buttonClass" @onclick="@(() => SetTemplate(template))">
+            <button class="btn btn-lg btn-outline-primary @buttonClass" @onclick="@(() => SetTemplate(template))">
                 <i class="bi @template.IconClass"></i>
                 @template.Name
             </button>

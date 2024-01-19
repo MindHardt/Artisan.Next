@@ -7,11 +7,11 @@
 <hr/>
 
 <div class="container-fluid d-grid gap-2">
-    <div class="row row-cols-2">
-        <div class="col d-grid gap-2">
+    <div class="row">
+        <div class="col-md-6 gap-2">
             <JsonFileControl @bind-Minnies="@_minnies" />
         </div>
-        <div class="col d-grid gap-2">
+        <div class="col-md-6 gap-2">
             <MinniesList Minnies="@_minnies" Template="_currentTemplate" />
         </div>
     </div>
