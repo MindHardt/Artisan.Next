@@ -1,3 +1,4 @@
+using System.Net;
 using Artisan.Next.Client;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -90,6 +91,12 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
         ForwardedHeaders.XForwardedFor |
         ForwardedHeaders.XForwardedProto |
         ForwardedHeaders.XForwardedHost;
+
+    var knownProxies = builder.Configuration.GetSection("KnownProxies").Get<string[]>() ?? [];
+    foreach (var proxy in knownProxies.Select(IPAddress.Parse))
+    {
+        options.KnownProxies.Add(proxy);
+    }
 });
 builder.Services.AddSwaggerGen(options =>
 {
@@ -106,12 +113,6 @@ await using (var scope = app.Services.CreateAsyncScope())
 {
     await scope.ServiceProvider.GetRequiredService<DataContext>().Database.MigrateAsync();
 }
-
-app.Use((ctx, next) =>
-{
-    ctx.Request.Scheme = "https";
-    return next();
-});
 
 app.UseForwardedHeaders();
 
