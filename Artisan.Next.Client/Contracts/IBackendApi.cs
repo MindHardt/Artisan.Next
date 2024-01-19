@@ -6,6 +6,7 @@ namespace Artisan.Next.Client.Contracts;
 public interface IBackendApi
 {
     [Get($"/files/{{{nameof(fileName)}}}")]
+    [QueryUriFormat(UriFormat.Unescaped)]
     public Task<string> ReadFileAsString(
         string fileName,
         CancellationToken ct = default);
@@ -17,6 +18,7 @@ public interface IBackendApi
 
 
     [Get($"/files/{{{nameof(fileName)}}}")]
+    [QueryUriFormat(UriFormat.Unescaped)]
     public Task<Stream> ReadFile(
         string fileName,
         CancellationToken ct = default);

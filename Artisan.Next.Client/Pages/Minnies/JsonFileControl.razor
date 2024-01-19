@@ -54,7 +54,7 @@
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">Имя</th>
-                        <th scope="col">Редактирован</th>
+                        <th scope="col">Дата изменения</th>
                         <th scope="col"></th>
                     </tr>
                     </thead>
@@ -72,9 +72,9 @@
                                 </span>
                             </td>
                             <td>
-                                <a class="btn btn-outline-primary" href="@shareUri" target="_blank">
+                                <button class="btn btn-outline-primary" onclick="navigator.clipboard.writeText('@shareUri');alert('Ссылка скопирована!')">
                                     <i class="bi bi-share"></i>
-                                </a>
+                                </button>
                                 <button class="btn btn-success" @onclick="@(() => InitiateJsonImport(row.file))">
                                     <i class="bi bi-cloud-download"></i>
                                 </button>

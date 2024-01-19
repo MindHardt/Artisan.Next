@@ -24,7 +24,12 @@
 
     <ItemGroup>
       <Folder Include="Features\" />
-      <Folder Include="wwwroot\img\" />
+      <Folder Include="wwwroot\files\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\svg\minnies_big.svg" />
+      <_ContentIncludedByDefault Remove="wwwroot\svg\minnies_small.svg" />
     </ItemGroup>
 
 </Project>
