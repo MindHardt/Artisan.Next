@@ -126,7 +126,7 @@ app.Use((ctx, next) =>
 {
     ctx.RequestServices
         .GetRequiredService<ILogger<Program>>()
-        .LogInformation("Request: {@Request}", ctx.Request);
+        .LogInformation("Headers: [{@Headers}]", ctx.Request.Headers);
     return next();
 });
 
