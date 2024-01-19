@@ -21,13 +21,14 @@ builder.Host.UseSerilog((ctx, logger) => logger.ReadFrom.Configuration(ctx.Confi
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveWebAssemblyComponents()
-    ;
+    .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingServerAuthenticationStateProvider>();
+
+builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpContextAccessor>().HttpContext!.User);
 
 builder.Services.AddAuthorization();
 builder.Services.AddAuthentication(options =>

@@ -1,4 +1,5 @@
-﻿using Artisan.Next.Client;
+﻿using System.Security.Claims;
+using Artisan.Next.Client;
 using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Data;
 using Microsoft.EntityFrameworkCore;
@@ -6,13 +7,13 @@ using Microsoft.EntityFrameworkCore;
 namespace Artisan.Next.Handlers.Files;
 
 public class GetFilesHandler(
-    IHttpContextAccessor httpContextAccessor,
+    ClaimsPrincipal user,
     DataContext dataContext)
     : IRequestHandler<GetFilesRequest, IReadOnlyCollection<ManagedFileModel>>
 {
     public async Task<IReadOnlyCollection<ManagedFileModel>> Handle(GetFilesRequest request, CancellationToken ct = default)
     {
-        var userId = httpContextAccessor.HttpContext?.User.GetUserId()!.Value;
+        var userId = user.GetUserId();
         var query = dataContext.Files
             .Where(x => x.OwnerId == userId);
 

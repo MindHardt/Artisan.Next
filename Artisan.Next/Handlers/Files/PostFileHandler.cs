@@ -1,4 +1,5 @@
-﻿using Artisan.Next.Client;
+﻿using System.Security.Claims;
+using Artisan.Next.Client;
 using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Data;
 using Artisan.Next.Data.Entities;
@@ -6,14 +7,14 @@ using Artisan.Next.Data.Entities;
 namespace Artisan.Next.Handlers.Files;
 
 public class PostFileHandler(
-    IHttpContextAccessor httpContextAccessor,
+    ClaimsPrincipal user,
     DataContext dataContext,
     IWebHostEnvironment hostEnvironment)
     : IRequestHandler<PostFileRequest<IFormFile>, ManagedFileModel>
 {
     public async Task<ManagedFileModel> Handle(PostFileRequest<IFormFile> request, CancellationToken ct = default)
     {
-        var userId = httpContextAccessor.HttpContext?.User.GetUserId()!.Value;
+        var userId = user.GetUserId();
         await using var data = request.File.OpenReadStream();
 
         var uniqueName = GetUniqueName(request.File.FileName);

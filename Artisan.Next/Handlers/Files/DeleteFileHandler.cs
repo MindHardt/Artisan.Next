@@ -1,4 +1,6 @@
-﻿using Artisan.Next.Client;
+﻿using System.Security.Claims;
+using System.Security.Principal;
+using Artisan.Next.Client;
 using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Data;
 using Microsoft.EntityFrameworkCore;
@@ -6,14 +8,14 @@ using Microsoft.EntityFrameworkCore;
 namespace Artisan.Next.Handlers.Files;
 
 public class DeleteFileHandler(
-    IHttpContextAccessor httpContextAccessor,
+    ClaimsPrincipal user,
     IWebHostEnvironment hostEnvironment,
     DataContext dataContext)
     : IRequestHandler<DeleteFileRequest, ManagedFileModel>
 {
     public async Task<ManagedFileModel> Handle(DeleteFileRequest request, CancellationToken ct = default)
     {
-        var userId = httpContextAccessor.HttpContext?.User.GetUserId();
+        var userId = user.GetUserId();
         var file = await dataContext.Files
             .FirstOrDefaultAsync(x => x.UniqueName == request.UniqueName, ct);
 
