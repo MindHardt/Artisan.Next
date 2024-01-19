@@ -48,5 +48,5 @@ public static class Extensions
 
     [DoesNotReturn]
     public static void NavigateToLogin(this NavigationManager navManager)
-        => navManager.NavigateTo($"Account/Login?returnUrl={Uri.EscapeDataString(navManager.Uri.Replace("http", "https"))}", forceLoad: true);
+        => navManager.NavigateTo($"Account/Login?returnUrl={Uri.EscapeDataString(navManager.Uri.Replace("https", "http"))}", forceLoad: true);
 }
