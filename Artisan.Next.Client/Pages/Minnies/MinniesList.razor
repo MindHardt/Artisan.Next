@@ -109,7 +109,7 @@
         var minnieImage = await e.File.RequestImageFileAsync("jpeg", 1024, 1024);
         var minnieName = Path.GetFileNameWithoutExtension(minnieImage.Name);
 
-        await using var imageStream = minnieImage.OpenReadStream(1024 * 1024 * 2);
+        await using var imageStream = minnieImage.OpenReadStream(long.MaxValue);
         var base64Stream = new MemoryStream();
         await imageStream.CopyToAsync(base64Stream);
 
