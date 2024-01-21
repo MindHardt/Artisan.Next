@@ -1,0 +1,15 @@
+name: SSH Deploy
+on: [push]
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploying using ssh
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        proxy_key: ${{ secrets.SSH_KEY }}
+        script: deploy src/Artisan.Next
