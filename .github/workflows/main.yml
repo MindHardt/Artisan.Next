@@ -11,5 +11,5 @@ jobs:
       with:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
-        proxy_key: ${{ secrets.SSH_KEY }}
+        key: ${{ secrets.SSH_KEY }}
         script: deploy src/Artisan.Next
