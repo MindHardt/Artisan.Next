@@ -1,6 +1,11 @@
-﻿@inject HttpClient HttpClient
-@inject DownloadJsInterop Download
+﻿@inject DownloadJsInterop Download
+@inject IMemoryCache Cache
+@inject IBackendApi Backend
+
 @using Artisan.Next.Client.JsInterop
+@using Microsoft.Extensions.Caching.Memory
+@using Artisan.Next.Client.Contracts
+
 <div>
     <div class="btn-group w-100">
         @foreach (var template in Templates)
@@ -13,19 +18,18 @@
                 @template.Name
             </button>
         }
-        @if (_originalSvg is not null)
-        {
-            <button class="btn btn-lg btn-success" @onclick="@DownloadSvg">
-                <i class="bi bi-download"></i>
-                SVG
-            </button>
-        }
+        <button class="btn btn-lg btn-success" @onclick="@DownloadSvg" disabled="@(_originalSvg is null)">
+            <i class="bi bi-download"></i>
+            SVG
+        </button>
     </div>
     
     @if (_originalSvg is null)
     {
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+        <div class="mx-auto">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
         </div>
     }
     else
@@ -58,20 +62,25 @@
     {
         Template = Templates.First();
         await TemplateChanged.InvokeAsync(Template);
-        await LoadOriginalSvg();
+        foreach (var svgUrl in Templates.Select(x => x.Url))
+        {
+            var svg = TransformOriginalSvg(await Backend.ReadFileAsString(svgUrl));
+            Cache.Set(svgUrl, svg);
+        }
+        SetOriginalSvg();
     }
 
     private async Task DownloadSvg()
-        => await Download.DownloadAsync(PrepareSvg(), "minnies.svg");
+        => await Download.DownloadAsync(PrepareSvg(), $"{Path.GetRandomFileName()}.svg");
 
-    private async Task SetTemplate(Template template)
+    private void SetTemplate(Template template)
     {
         Template = template;
-        await LoadOriginalSvg();
+        SetOriginalSvg();
     }
 
-    private async Task LoadOriginalSvg()
+    private void SetOriginalSvg()
     {
-        _originalSvg = TransformOriginalSvg(await HttpClient.GetStringAsync(Template.Url));
+        _originalSvg = Cache.Get<string>(Template.Url);
     }
 }

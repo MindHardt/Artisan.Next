@@ -1,0 +1,33 @@
+﻿@page "/Map"
+<h3>Карта долины Делормон</h3>
+
+<div class="btn-group w-100">
+    @foreach (var source in Sources)
+    {
+        var btnClass = source == _source
+            ? "btn-primary"
+            : "btn-outline-primary";
+
+        <button class="btn @btnClass" @onclick="@(() => _source = source)">
+            <i class="bi @source.IconClass"></i>
+            @source.Name
+        </button>
+    }
+</div>
+
+<img class="img-fluid img-thumbnail" src="@_source.Url" alt="Map" />
+
+
+@code {
+
+    private MapSource _source = Sources.First();
+
+    private static readonly MapSource[] Sources =
+    [
+        new MapSource("Физическая", "bi-globe-asia-australia" ,"img/Physical.jpg"),
+        new MapSource("Политическая", "bi-flag", "img/Political.jpg")
+    ];
+
+    private record MapSource(string Name, string IconClass, string Url);
+
+}

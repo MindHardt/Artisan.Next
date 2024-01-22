@@ -5,9 +5,32 @@ namespace Artisan.Next.Client.Contracts;
 
 public interface IBackendApi
 {
+    [Get($"/{{{nameof(filePath)}}}")]
+    [QueryUriFormat(UriFormat.Unescaped)]
+    public Task<string> ReadFileAsString(
+        string filePath,
+        CancellationToken ct = default);
+
+    public Task<string> ReadFileAsString(
+        ManagedFileModel file,
+        CancellationToken ct = default)
+        => ReadFileAsString(file.GetPath(), ct);
+
+
+    [Get($"/{{{nameof(filePath)}}}")]
+    [QueryUriFormat(UriFormat.Unescaped)]
+    public Task<Stream> ReadFile(
+        string filePath,
+        CancellationToken ct = default);
+
+    public Task<Stream> ReadFile(
+        ManagedFileModel file,
+        CancellationToken ct = default) => ReadFile(file.GetPath(), ct);
+
     [Get("/files")]
     public Task<ManagedFileModel[]> GetFiles(
-        [Query] GetFilesRequest request, CancellationToken ct = default);
+        [Query] GetFilesRequest request,
+        CancellationToken ct = default);
 
     [Multipart]
     [Post("/files")]

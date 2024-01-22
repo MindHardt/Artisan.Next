@@ -61,4 +61,9 @@
       <EmbeddedResource Remove="Logs\**" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\svg\minnies_big.svg" />
+      <_ContentIncludedByDefault Remove="wwwroot\svg\minnies_small.svg" />
+    </ItemGroup>
+
 </Project>

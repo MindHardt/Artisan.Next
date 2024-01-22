@@ -17,34 +17,40 @@
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Главная
+            <NavLink class="nav-link gap-2 fw-bold" href="" Match="NavLinkMatch.All">
+                <i class="bi-house-door"></i> Главная
             </NavLink>
         </div>
         
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="minnies">
-                <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Минифигурки
+            <NavLink class="nav-link gap-2 fw-bold" href="minnies">
+                <i class="bi-people"></i> Минифигурки
             </NavLink>
         </div>
         
         <div class="nav-item px-3">
-            <NavLink class="nav-link" target="_blank" href="https://un1ver5e.notion.site/5933e3cf40e84cd5a3c04d2470ce0717?pvs=4">
-                <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true" target="_blank"></span> Аркленс
+            <NavLink class="nav-link gap-2 fw-bold" href="map">
+                <i class="bi-map-fill"></i> Карта
             </NavLink>
         </div>
         
         <div class="nav-item px-3">
-            <NavLink class="nav-link" target="_blank" href="https://un1ver5e.notion.site/03d176b5c22d48d88a02b6c086659dcf?pvs=4">
-                <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Настолки
+            <NavLink class="nav-link gap-2 fw-bold text-info" target="_blank" href="https://un1ver5e.notion.site/5933e3cf40e84cd5a3c04d2470ce0717?pvs=4">
+                <i class="bi-arrow-up-right" target="_blank"></i> Аркленс
+            </NavLink>
+        </div>
+        
+        <div class="nav-item px-3">
+            <NavLink class="nav-link gap-2 fw-bold text-info" target="_blank" href="https://un1ver5e.notion.site/03d176b5c22d48d88a02b6c086659dcf?pvs=4">
+                <i class="bi-arrow-up-right" target="_blank"></i> Настолки
             </NavLink>
         </div>
         
         @if (Environment.IsDevelopment())
         {
             <div class="nav-item px-3">
-                <NavLink class="nav-link" target="_blank" href="swagger">
-                    <span class="bi bi-lock-nav-menu" aria-hidden="true"></span> Swagger
+                <NavLink class="nav-link gap-2 fw-bold" target="_blank" href="swagger">
+                    <i class="bi-lock"></i> Swagger
                 </NavLink>
             </div>
         }

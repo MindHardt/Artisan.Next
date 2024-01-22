@@ -6,7 +6,9 @@
     <div class="row mb-3">
         <h1 class="col">
             Минифигурки
-            <InputFile OnChange="@AddMinifigureImage" class="form-control" accept="image/*" hidden id="minnie-image-input"/>
+            <InputFile 
+                OnChange="@(e => InvokeAsync(() => AddMinifigureImage(e)))"
+                multiple class="form-control" accept="image/*" hidden id="minnie-image-input"/>
         </h1>
     </div>
     <div class="row mb-3">
@@ -106,20 +108,23 @@
 
     private async Task AddMinifigureImage(InputFileChangeEventArgs e)
     {
-        var minnieImage = await e.File.RequestImageFileAsync("jpeg", 1024, 1024);
-        var minnieName = Path.GetFileNameWithoutExtension(minnieImage.Name);
-
-        await using var imageStream = minnieImage.OpenReadStream(long.MaxValue);
-        var base64Stream = new MemoryStream();
-        await imageStream.CopyToAsync(base64Stream);
-
-        var base64String = Convert.ToBase64String(base64Stream.ToArray());
-        var minnie = new Minifigure
+        foreach (var file in e.GetMultipleFiles())
         {
-            Name = minnieName,
-            ImageBase64 = base64String
-        };
-        Minnies.Add(minnie);
+            var minnieImage = await file.RequestImageFileAsync("jpeg", 1024, 1024);
+            var minnieName = Path.GetFileNameWithoutExtension(minnieImage.Name);
+
+            await using var imageStream = minnieImage.OpenReadStream(long.MaxValue);
+            var base64Stream = new MemoryStream();
+            await imageStream.CopyToAsync(base64Stream);
+
+            var base64String = Convert.ToBase64String(base64Stream.ToArray());
+            var minnie = new Minifigure
+            {
+                Name = minnieName,
+                ImageBase64 = base64String
+            };
+            Minnies.Add(minnie);
+        }
         await MinniesChanged.InvokeAsync(Minnies);
     }
 
