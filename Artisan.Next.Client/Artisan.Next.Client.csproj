@@ -36,6 +36,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Arklens.Next\Arklens.Next\Arklens.Next.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
       <Compile Update="Features\Maps\YandexMapFramesProvider.cs">
         <DependentUpon>IMapFramesProvider.cs</DependentUpon>
       </Compile>
