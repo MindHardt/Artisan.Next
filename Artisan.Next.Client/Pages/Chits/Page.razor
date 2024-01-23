@@ -1,0 +1,63 @@
+﻿@page "/chits"
+@using Arklens.Next.Entities
+@using Artisan.Next.Client.Contracts.Chits
+@using Bogus
+@using Arklens.Next.Core
+
+@inject Faker Faker
+
+@if (_chits is null)
+{
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+}
+else
+{
+    <div class="container-fluid mw-100">
+        <div class="row flex-row flex-nowrap overflow-scroll">
+            @foreach (var chit in _chits)
+            {
+                <div class="col-2">
+                    <div class="card border-primary mb-3 w-100">
+                        <img src="@chit.ImageUrl" class="card-img-top" alt="...">
+                        <div class="card-body">
+                            <h5 class="card-title">@chit.Name</h5>
+                            <p class="card-text">@chit.Alignment.ToDisplayString()</p>
+                            <p>
+                                <HealthBar Health="@chit.Health" />
+                            </p>
+                        </div>
+                        <div class="card-footer text-muted">
+                            @chit.Id
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+
+@code 
+{
+    private MonsterChitModel[]? _chits;
+
+    protected override void OnInitialized()
+    {
+        _chits = Alignment.AllValues.OrderBy(_ => Random.Shared.Next())
+            .Select(x => new MonsterChitModel
+            {
+                Id = "1234567890",
+                Name = Faker.Name.FirstName(),
+                Health = new HealthModel
+                {
+                    MaxHealth = Random.Shared.Next(1, 101),
+                    CurrentHealth = Random.Shared.Next(1, 101)
+                },
+                ImageUrl = Faker.Image.LoremFlickrUrl(),
+                Alignment = x
+            })
+            .ToArray();
+    }
+}

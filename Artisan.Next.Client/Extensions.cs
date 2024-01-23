@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Arklens.Next.Extra;
 using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Client.Models;
 using Microsoft.AspNetCore.Components;
@@ -45,6 +46,7 @@ public static class Extensions
         options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
         options.PropertyNameCaseInsensitive = true;
         options.Converters.Add(new JsonStringEnumConverter());
+        options.Converters.Add(new AlidEntityJsonConverterFactory());
     }
 
     public static void NavigateToLogin(this NavigationManager navManager, IWebAssemblyHostEnvironment hostEnvironment)

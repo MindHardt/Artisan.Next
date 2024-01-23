@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Bogus" Version="35.4.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
@@ -32,6 +33,10 @@
       <_ContentIncludedByDefault Remove="wwwroot\svg\minnies_small.svg" />
       <_ContentIncludedByDefault Remove="wwwroot\files\svg\minnies_big.svg" />
       <_ContentIncludedByDefault Remove="wwwroot\files\svg\minnies_small.svg" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Arklens.Next\Arklens.Next\Arklens.Next.csproj" />
     </ItemGroup>
 
 </Project>
