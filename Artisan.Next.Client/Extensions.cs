@@ -57,4 +57,8 @@ public static class Extensions
 
         navManager.NavigateTo($"Account/Login?returnUrl={Uri.EscapeDataString(url)}", forceLoad: true);
     }
+
+    public static string ToModifierString(this int value) => value >= 0
+        ? $"+{value}"
+        : value.ToString();
 }

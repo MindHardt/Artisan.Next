@@ -1,7 +1,7 @@
 ﻿@using Artisan.Next.Client.Contracts.Chits
 
 <div>
-    <span class="text-center">@Health.CurrentHealth/@Health.MaxHealth (@HealthPercent%)</span>
+    <span class="text-center">@Model.CurrentHealth/@Model.MaxHealth (@HealthPercent%)</span>
     <div class="progress">
         <div class="progress-bar bg-success" role="progressbar" style="width: @HealthPercent%" aria-valuenow="@HealthPercent" aria-valuemin="0" aria-valuemax="100"></div>
         <div class="progress-bar bg-danger" role="progressbar" style="width: @(100 - HealthPercent)%" aria-valuenow="@(100 - HealthPercent)" aria-valuemin="0" aria-valuemax="100"></div>
@@ -9,8 +9,8 @@
 </div>
 
 @code {
-    private int HealthPercent => Math.Clamp(Health.CurrentHealth * 100 / Health.MaxHealth, 0, 100);
+    private int HealthPercent => Math.Clamp(Model.CurrentHealth * 100 / Model.MaxHealth, 0, 100);
 
     [Parameter, EditorRequired]
-    public HealthModel Health { get; set; } = null!;
+    public HealthModel Model { get; set; } = null!;
 }
