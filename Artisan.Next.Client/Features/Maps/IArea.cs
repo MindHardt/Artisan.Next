@@ -15,6 +15,11 @@ public interface IArea
     public float Area { get; }
 
     /// <summary>
+    /// Gets the center of this <see cref="IArea"/>.
+    /// </summary>
+    public Point Center { get; }
+
+    /// <summary>
     /// Checks whether this <see cref="IArea"/>
     /// contains <paramref name="point"/> inside.
     /// </summary>
