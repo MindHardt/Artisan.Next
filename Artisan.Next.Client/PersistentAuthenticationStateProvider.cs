@@ -1,5 +1,5 @@
 using System.Security.Claims;
-using Artisan.Next.Client.Models;
+using Artisan.Next.Client.Contracts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 

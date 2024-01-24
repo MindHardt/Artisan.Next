@@ -1,6 +1,6 @@
 ﻿namespace Artisan.Next.Client.Features.Maps;
 
-public readonly record struct RectangularArea(Point BottomLeft, Point TopRight) : IArea
+public record RectangularArea(Point BottomLeft, Point TopRight) : IArea
 {
     public RectangularArea(float bottom, float left, float top, float right)
         : this((left, bottom), (right, top))

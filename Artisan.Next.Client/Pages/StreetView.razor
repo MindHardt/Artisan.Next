@@ -1,0 +1,49 @@
+﻿@page "/streetview"
+@using Artisan.Next.Client.Features.Maps
+@using Sqids
+
+@inject IMapFramesProvider MapFramesProvider
+@inject SqidsEncoder<int> SqidsEncoder
+
+<h3>Panoramas</h3>
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-4">
+            <button @onclick="NewPoint" class="btn btn-primary btn-lg w-100">
+                <i class="bi bi-play"></i>
+            </button>
+        </div>
+        <div class="col-8">
+            <input class="form-control form-control-lg" type="text" value="@_sqid" aria-label="Sqid of generated streetview" readonly>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            @if (_url is not null)
+            {
+                <div class="img-thumbnail">
+                    <iframe src="@_url" allowfullscreen width="100%" height="100%"></iframe>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private string? _sqid;
+    private readonly List<IArea> _areas =
+    [
+        new RectangularArea(55.55f, 37.35f, 55.95f, 35.95f),
+    ];
+
+    private string? _url;
+
+    public void NewPoint()
+    {
+        var seed = Random.Shared.Next(int.MaxValue);
+        _sqid = SqidsEncoder.Encode(seed);
+        _url = MapFramesProvider.GetStreetViewUri(_areas.First(), new Random(seed)).ToString();
+    }
+}

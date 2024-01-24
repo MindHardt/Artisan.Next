@@ -1,11 +1,11 @@
 using System.Diagnostics;
+using Artisan.Next.Client.Contracts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using Artisan.Next.Client.Models;
 using Artisan.Next.Data.Entities;
 
 namespace Artisan.Next.Components.Account;
