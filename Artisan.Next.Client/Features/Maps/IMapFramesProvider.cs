@@ -12,9 +12,9 @@ public interface IMapFramesProvider
     /// </summary>
     public Uri GetStreetViewUri(Point point);
     /// <summary>
-    /// Gets a street view of a random point in the provided <see cref="IArea"/>.
+    /// Gets an external link of the provided <see cref="Point"/>.
     /// </summary>
-    public Uri GetStreetViewUri(IArea area, Random? random = null) => GetStreetViewUri(area.GetRandomPoint(random));
+    public Uri GetExternalStreetViewUri(Point point);
     /// <summary>
     /// Gets a map view showing provided point on a map.
     /// </summary>

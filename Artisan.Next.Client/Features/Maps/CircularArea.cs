@@ -7,6 +7,8 @@ public record CircularArea(Point Center, float Radius) : IArea
     public bool Contains(Point point)
         => Center.DistanceTo(point) <= Radius;
 
+    public EllipsoidArea AsEllipsoid() => new(Center, Radius, Radius);
+
     public Point GetRandomPoint(Random? random = null)
     {
         random ??= Random.Shared;

@@ -6,6 +6,18 @@ public record RectangularArea(Point BottomLeft, Point TopRight) : IArea
         : this((left, bottom), (right, top))
     { }
 
+    public RectangularArea(Point center, float width, float height)
+        : this(
+            center.Y - height / 2,
+            center.X - width / 2,
+            center.Y + height / 2,
+            center.X + height / 2)
+    { }
+
+    public float Width => TopRight.X - BottomLeft.X;
+    public float Height => TopRight.Y - BottomLeft.Y;
+    public Point Center => (BottomLeft.X + Width / 2, BottomLeft.Y + Height / 2);
+
     public float Area { get; } =
         MathF.Abs(TopRight.X - BottomLeft.X) *
         MathF.Abs(TopRight.Y - BottomLeft.Y);

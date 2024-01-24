@@ -1,49 +1,123 @@
 ﻿@page "/streetview"
 @using Artisan.Next.Client.Features.Maps
 @using Sqids
+@using Artisan.Next.Client.Contracts.Maps
+@using Microsoft.Extensions.Caching.Memory
 
 @inject IMapFramesProvider MapFramesProvider
 @inject SqidsEncoder<int> SqidsEncoder
+@inject IMemoryCache MemoryCache
 
 <h3>Panoramas</h3>
 
 <div class="container-fluid">
-    <div class="row mb-3">
-        <div class="col-4">
-            <button @onclick="NewPoint" class="btn btn-primary btn-lg w-100">
-                <i class="bi bi-play"></i>
-            </button>
-        </div>
-        <div class="col-8">
-            <input class="form-control form-control-lg" type="text" value="@_sqid" aria-label="Sqid of generated streetview" readonly>
-        </div>
-    </div>
     <div class="row">
-        <div class="col-12">
-            @if (_url is not null)
-            {
-                <div class="img-thumbnail">
-                    <iframe src="@_url" allowfullscreen width="100%" height="100%"></iframe>
+        <!-- Sqid and StreetView -->
+        <div class="col-6">
+            <div class="container-fluid">
+                <div class="row mb-1">
+                    <div class="col-4">
+                        <button @onclick="GeneratePoint" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-dice-@Random.Shared.Next(1, 7)"></i>
+                        </button>
+                    </div>
+                    <div class="col-8">
+                        <InputText @bind-Value="@Sqid" class="form-control form-control-lg" />
+                    </div>
                 </div>
-            }
+                <div class="row" style="height: 20rem">
+                    <div class="col-12">
+                        <div class="img-thumbnail h-100">
+                            <iframe src="@MapFramesProvider.GetStreetViewUri(_point)"
+                                    allowfullscreen width="100%" height="100%"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="container-fluid">
+                <div class="row mb-1">
+                    <div class="col-10">
+                        <select class="form-control form-control-lg">
+                            @foreach (var area in Areas)
+                            {
+                                <option @onselect="@(() => _area = area)" selected="@(_area == area)">
+                                    @area.Name
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-2">
+                        <button class="btn btn-warning btn-lg w-100">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="row" style="height: 20rem">
+                    <div class="col-12">
+                        <div class="img-thumbnail h-100">
+                            <iframe src="@MapFramesProvider.GetAreaDisplayUri(_area.Area)" 
+                                    allowfullscreen width="100%" height="100%"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 @code {
 
-    private string? _sqid;
-    private readonly List<IArea> _areas =
+    private int _seed;
+
+    private int Seed
+    {
+        get => _seed;
+        set
+        {
+            MemoryCache.Set(nameof(Seed), value);
+            _point = _area.Area.GetRandomPoint(new Random(_seed = value));
+        }
+    }
+    private string Sqid
+    {
+        get => SqidsEncoder.Encode(_seed);
+        set => Seed = SqidsEncoder.Decode(value)[0];
+    }
+
+    private Point _point;
+    private SavedMapAreaModel _area = Areas.First();
+
+    private static readonly List<SavedMapAreaModel> Areas =
     [
-        new RectangularArea(55.55f, 37.35f, 55.95f, 35.95f),
+        new SavedMapAreaModel
+        {
+            Name = "Круг",
+            Area = new EllipsoidArea((37.625f, 55.75f), 0.75f, 0.4f)
+        },
+        new SavedMapAreaModel
+        {
+            Name = "Moscow",
+            Area = new RectangularArea((37.6f, 55.75f), 0.5f, 0.4f)
+        },
     ];
 
-    private string? _url;
-
-    public void NewPoint()
+    public void GeneratePoint()
     {
-        var seed = Random.Shared.Next(int.MaxValue);
-        _sqid = SqidsEncoder.Encode(seed);
-        _url = MapFramesProvider.GetStreetViewUri(_areas.First(), new Random(seed)).ToString();
+        Seed = Random.Shared.Next(int.MaxValue);
     }
+
+    protected override void OnParametersSet()
+    {
+        if (MemoryCache.TryGetValue(nameof(Seed), out int seed))
+        {
+            Seed = seed;
+        }
+        else
+        {
+            GeneratePoint();
+        }
+    }
+
 }
