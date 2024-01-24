@@ -20,21 +20,22 @@ else
             {
                 <div class="col-3">
                     <div class="card w-100">
-                        <img src="@chit.ImageUrl" class="card-img-top" alt="...">
+                        <img src="@chit.Model.ImageUrl" class="card-img-top" alt="...">
                         <div class="card-body">
-                            <h5 class="card-title">@chit.Name</h5>
-                            <p class="card-text">@chit.Alignment.ToDisplayString()</p>
-                            <p>
-                                <HealthBar Model="@chit.Health" />
-                            </p>
-                            <p>
-                                <Characteristics Model="@chit.Characteristics" />
-                            </p>
+                            <h5 class="card-title">@chit.Model.Name</h5>
+                            <p class="card-text">@chit.Model.Alignment.ToDisplayString()</p>
+                            <HealthBar Model="@chit.Model.Health" Edited="@chit.Edited"/>
+                            <Modifiers Values="@GetCharacteristics(chit.Model)" Edited="@chit.Edited"/>
                             <hr/>
-                            
+                            <Modifiers Values="@GetSaves(chit.Model)" Edited="@chit.Edited"/>
                         </div>
                         <div class="card-footer text-muted">
-                            @chit.Id
+                            <button 
+                                class="btn @(chit.Edited ? "btn-warning" : "btn-outline-warning")" 
+                                @onclick="@(() => chit.Edited = !chit.Edited)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            @chit.Model.Id
                         </div>
                     </div>
                 </div>
@@ -46,7 +47,32 @@ else
 
 @code 
 {
-    private MonsterChitModel[]? _chits;
+    private record ChitModel
+    {
+        public required MonsterChitModel Model { get; set; }
+        public bool Edited { get; set; } = false;
+    }
+    private ChitModel[]? _chits;
+
+    private static IEnumerable<ModifierValue> GetCharacteristics(MonsterChitModel chit) =>
+    [
+        new ModifierValue("💪", chit.Characteristics.Str),
+        new ModifierValue("🏃", chit.Characteristics.Dex),
+        new ModifierValue("💪", chit.Characteristics.Con),
+        new ModifierValue("🧠", chit.Characteristics.Int),
+        new ModifierValue("🦉", chit.Characteristics.Wis),
+        new ModifierValue("👄", chit.Characteristics.Cha)
+    ];
+
+    private static IEnumerable<ModifierValue> GetSaves(MonsterChitModel chit) =>
+    [
+        new ModifierValue("🐂", chit.Stats.Fort),
+        new ModifierValue("🐭", chit.Stats.Reac),
+        new ModifierValue("♾️", chit.Stats.Will),
+        new ModifierValue("🔬", chit.Stats.Conc),
+        new ModifierValue("👁️", chit.Stats.Perc),
+        new ModifierValue("⌛", chit.Stats.Init)
+    ];
 
     protected override void OnInitialized()
     {
@@ -69,8 +95,22 @@ else
                     Wis = Random.Shared.Next(-5, 6),
                     Cha = Random.Shared.Next(-5, 6)
                 },
+                Stats = new StatsModel
+                {
+                    Fort = Random.Shared.Next(0, 11),
+                    Reac = Random.Shared.Next(0, 11),
+                    Will = Random.Shared.Next(0, 11),
+                    Conc = Random.Shared.Next(0, 11),
+                    Perc = Random.Shared.Next(0, 11),
+                    Init = Random.Shared.Next(0, 11)
+                },
                 ImageUrl = Faker.Image.LoremFlickrUrl(),
                 Alignment = x
+
+            })
+            .Select(chit => new ChitModel
+            {
+                Model = chit
             })
             .ToArray();
     }

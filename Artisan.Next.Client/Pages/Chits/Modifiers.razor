@@ -1,0 +1,33 @@
+﻿@using Artisan.Next.Client.Contracts.Chits
+<div class="container-fluid p-0 text-start">
+    @foreach (var row in Values.Chunk(3))
+    {
+        <div class="row">
+            @foreach (var characteristic in row)
+            {
+                <div class="col-4 text-center">
+                    @if (Edited)
+                    {
+                        @characteristic.Emoji
+                        <InputNumber class="form-control form-control-sm w-100" @bind-Value="@characteristic.Value"/>
+                    }
+                    else
+                    {
+                        <button class="btn w-100">
+                            <h5>
+                                <b>@characteristic.Emoji @characteristic.Value.ToModifierString()</b>
+                            </h5>
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public bool Edited { get; set; }
+    [Parameter, EditorRequired]
+    public IEnumerable<ModifierValue> Values { get; set; } = null!;
+}
