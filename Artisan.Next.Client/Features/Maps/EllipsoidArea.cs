@@ -21,6 +21,6 @@ public record EllipsoidArea(Point Center, float Width, float Height) : IArea
         var xOffset = random.NextSingle() * Width / 2 * MathF.Cos(angle);
         var yOffset = random.NextSingle() * Height / 2 * MathF.Sin(angle);
 
-        return (Center.Y + xOffset, Center.Y + yOffset);
+        return (Center.X + xOffset, Center.Y + yOffset);
     }
 }

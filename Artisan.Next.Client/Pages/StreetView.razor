@@ -8,8 +8,6 @@
 @inject SqidsEncoder<int> SqidsEncoder
 @inject IMemoryCache MemoryCache
 
-<h3>Panoramas</h3>
-
 <div class="container-fluid">
     <div class="row">
         <!-- Sqid and StreetView -->
@@ -21,8 +19,13 @@
                             <i class="bi bi-dice-@Random.Shared.Next(1, 7)"></i>
                         </button>
                     </div>
-                    <div class="col-8">
+                    <div class="col-6">
                         <InputText @bind-Value="@Sqid" class="form-control form-control-lg" />
+                    </div>
+                    <div class="col-2">
+                        <a class="btn btn-lg btn-info w-100" href="@MapFramesProvider.GetExternalStreetViewUri(_point)" target="_blank">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
                     </div>
                 </div>
                 <div class="row" style="height: 20rem">
@@ -39,10 +42,10 @@
             <div class="container-fluid">
                 <div class="row mb-1">
                     <div class="col-10">
-                        <select class="form-control form-control-lg">
+                        <select class="form-control form-control-lg" @onchange="@SetArea">
                             @foreach (var area in Areas)
                             {
-                                <option @onselect="@(() => _area = area)" selected="@(_area == area)">
+                                <option selected="@(_currentArea == area)" value="@area.Id">
                                     @area.Name
                                 </option>
                             }
@@ -57,7 +60,7 @@
                 <div class="row" style="height: 20rem">
                     <div class="col-12">
                         <div class="img-thumbnail h-100">
-                            <iframe src="@MapFramesProvider.GetAreaDisplayUri(_area.Area)" 
+                            <iframe src="@MapFramesProvider.GetAreaDisplayUri(_currentArea.Area)" 
                                     allowfullscreen width="100%" height="100%"></iframe>
                         </div>
                     </div>
@@ -77,7 +80,7 @@
         set
         {
             MemoryCache.Set(nameof(Seed), value);
-            _point = _area.Area.GetRandomPoint(new Random(_seed = value));
+            _point = _currentArea.Area.GetRandomPoint(new Random(_seed = value));
         }
     }
     private string Sqid
@@ -87,19 +90,27 @@
     }
 
     private Point _point;
-    private SavedMapAreaModel _area = Areas.First();
+
+    private void SetArea(ChangeEventArgs e)
+    {
+        var id = Guid.Parse((string)e.Value!);
+        _currentArea = Areas.First(x => x.Id == id);
+    }
+    private SavedMapAreaModel _currentArea = Areas.First();
 
     private static readonly List<SavedMapAreaModel> Areas =
     [
         new SavedMapAreaModel
         {
-            Name = "Круг",
+            Id = Guid.NewGuid(),
+            Name = "Москва",
             Area = new EllipsoidArea((37.625f, 55.75f), 0.75f, 0.4f)
         },
         new SavedMapAreaModel
         {
-            Name = "Moscow",
-            Area = new RectangularArea((37.6f, 55.75f), 0.5f, 0.4f)
+            Id = Guid.NewGuid(),
+            Name = "Москва+",
+            Area = new EllipsoidArea((37.625f, 55.75f), 1.25f, 0.8f)
         },
     ];
 
