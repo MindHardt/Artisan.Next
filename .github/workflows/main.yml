@@ -1,5 +1,8 @@
 name: SSH Deploy
-on: [push]
+on:
+  push:
+    branches:
+      - master
 jobs:
 
   build:
@@ -12,4 +15,4 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
-        script: cd src/Artisan.Next && git pull && sudo docker-compose up --detach --build
+        script: cd src/Artisan.Next && git pull && git submodule update --recursive --remote && sudo docker-compose up --detach --build

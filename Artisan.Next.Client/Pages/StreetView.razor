@@ -1,0 +1,134 @@
+﻿@page "/streetview"
+@using Artisan.Next.Client.Features.Maps
+@using Sqids
+@using Artisan.Next.Client.Contracts.Maps
+@using Microsoft.Extensions.Caching.Memory
+
+@inject IMapFramesProvider MapFramesProvider
+@inject SqidsEncoder<int> SqidsEncoder
+@inject IMemoryCache MemoryCache
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sqid and StreetView -->
+        <div class="col-6">
+            <div class="container-fluid">
+                <div class="row mb-1">
+                    <div class="col-4">
+                        <button @onclick="GeneratePoint" class="btn btn-primary btn-lg w-100">
+                            <i class="bi bi-dice-@Random.Shared.Next(1, 7)"></i>
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <InputText @bind-Value="@Sqid" class="form-control form-control-lg" />
+                    </div>
+                    <div class="col-2">
+                        <a class="btn btn-lg btn-info w-100" href="@MapFramesProvider.GetExternalStreetViewUri(_point)" target="_blank">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="row" style="height: 20rem">
+                    <div class="col-12">
+                        <div class="img-thumbnail h-100">
+                            <iframe src="@MapFramesProvider.GetStreetViewUri(_point)"
+                                    allowfullscreen width="100%" height="100%"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="container-fluid">
+                <div class="row mb-1">
+                    <div class="col-10">
+                        <select class="form-control form-control-lg" @onchange="@SetArea">
+                            @foreach (var area in Areas)
+                            {
+                                <option selected="@(_currentArea == area)" value="@area.Id">
+                                    @area.Name
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-2">
+                        <button class="btn btn-warning btn-lg w-100">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="row" style="height: 20rem">
+                    <div class="col-12">
+                        <div class="img-thumbnail h-100">
+                            <iframe src="@MapFramesProvider.GetAreaDisplayUri(_currentArea.Area)" 
+                                    allowfullscreen width="100%" height="100%"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private int _seed;
+
+    private int Seed
+    {
+        get => _seed;
+        set
+        {
+            MemoryCache.Set(nameof(Seed), value);
+            _point = _currentArea.Area.GetRandomPoint(new Random(_seed = value));
+        }
+    }
+    private string Sqid
+    {
+        get => SqidsEncoder.Encode(_seed);
+        set => Seed = SqidsEncoder.Decode(value)[0];
+    }
+
+    private Point _point;
+
+    private void SetArea(ChangeEventArgs e)
+    {
+        var id = Guid.Parse((string)e.Value!);
+        _currentArea = Areas.First(x => x.Id == id);
+    }
+    private SavedMapAreaModel _currentArea = Areas.First();
+
+    private static readonly List<SavedMapAreaModel> Areas =
+    [
+        new SavedMapAreaModel
+        {
+            Id = Guid.NewGuid(),
+            Name = "Москва",
+            Area = new EllipsoidArea((37.625f, 55.75f), 0.75f, 0.4f)
+        },
+        new SavedMapAreaModel
+        {
+            Id = Guid.NewGuid(),
+            Name = "Москва+",
+            Area = new EllipsoidArea((37.625f, 55.75f), 1.25f, 0.8f)
+        },
+    ];
+
+    public void GeneratePoint()
+    {
+        Seed = Random.Shared.Next(int.MaxValue);
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (MemoryCache.TryGetValue(nameof(Seed), out int seed))
+        {
+            Seed = seed;
+        }
+        else
+        {
+            GeneratePoint();
+        }
+    }
+
+}

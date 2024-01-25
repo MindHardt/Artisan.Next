@@ -1,6 +1,6 @@
 ﻿namespace Artisan.Next.Client.Features.Maps;
 
-public readonly record struct EllipsoidArea(Point Center, float Width, float Height) : IArea
+public record EllipsoidArea(Point Center, float Width, float Height) : IArea
 {
     public float Area { get; } = MathF.PI * Width * Height / 4;
     public bool Contains(Point point)
@@ -21,6 +21,6 @@ public readonly record struct EllipsoidArea(Point Center, float Width, float Hei
         var xOffset = random.NextSingle() * Width / 2 * MathF.Cos(angle);
         var yOffset = random.NextSingle() * Height / 2 * MathF.Sin(angle);
 
-        return (Center.Y + xOffset, Center.Y + yOffset);
+        return (Center.X + xOffset, Center.Y + yOffset);
     }
 }

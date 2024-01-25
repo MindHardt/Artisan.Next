@@ -1,11 +1,13 @@
 ﻿namespace Artisan.Next.Client.Features.Maps;
 
-public readonly record struct CircularArea(Point Center, float Radius) : IArea
+public record CircularArea(Point Center, float Radius) : IArea
 {
     public float Area { get; } = MathF.PI * Radius * Radius;
 
     public bool Contains(Point point)
         => Center.DistanceTo(point) <= Radius;
+
+    public EllipsoidArea AsEllipsoid() => new(Center, Radius, Radius);
 
     public Point GetRandomPoint(Random? random = null)
     {
