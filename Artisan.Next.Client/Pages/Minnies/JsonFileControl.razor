@@ -26,7 +26,7 @@
     <div class="row mb-3">
         <InputFile id="import-json" hidden accept="application/json" OnChange="@InitiateJsonImport"/>
         <div class="btn-group col p-0 w-100">
-            <button class="btn btn-success" onclick="document.getElementById('import-json').click()">
+            <button class="btn btn-success" onclick="document.getlinkButtonById('import-json').click()">
                 <i class="bi bi-upload"></i>
                 Импорт JSON
             </button>
@@ -72,8 +72,24 @@
                                 </span>
                             </td>
                             <td>
-                                <button class="btn btn-outline-primary" onclick="navigator.clipboard.writeText('@shareUri');alert('Ссылка скопирована!')">
-                                    <i class="bi bi-share"></i>
+                                <script>
+                                    function copyUrl(element, uri) {
+                                        console.log(this);
+                                        navigator.clipboard.writeText(uri);
+                                        
+                                        const linkButton = element;
+                                        const linkIcon = linkButton.children[0];
+                                                                                                                        
+                                        linkIcon.classList.replace('bi-link-45deg', 'bi-check-lg');
+                                        linkButton.classList.replace('btn-outline-primary', 'btn-primary');
+                                        setTimeout(() => {
+                                            linkIcon.classList.replace('bi-check-lg', 'bi-link-45deg');
+                                            linkButton.classList.replace('btn-primary', 'btn-outline-primary');
+                                        }, 2000);  
+                                    }
+                                </script>
+                                <button class="btn btn-outline-primary" onclick="copyUrl(this, '@shareUri')">
+                                    <i class="bi bi-link-45deg"></i>
                                 </button>
                                 <button class="btn btn-success" @onclick="@(() => InitiateJsonImport(row.file))">
                                     <i class="bi bi-cloud-download"></i>
