@@ -15,4 +15,5 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
+        command_timeout: 30m
         script: cd src/Artisan.Next && git pull && git submodule update --recursive --remote && sudo docker-compose up --detach --build
