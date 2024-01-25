@@ -8,7 +8,6 @@ public class YandexMapFramesProvider : IMapFramesProvider
         "https://yandex.ru/map-widget/v1/?ll={0}%2C{1}&rl={2}%2C{3}{4}&z=10";
     private const string DeltaUriPart =
         "~{0}%2C{1}";
-
     public Uri GetAreaDisplayUri(IArea area) => area switch
     {
         RectangularArea rect => GetRectangularAreaUri(rect),
@@ -17,9 +16,13 @@ public class YandexMapFramesProvider : IMapFramesProvider
         _ => throw new NotSupportedException($"{area.GetType()} is not supported")
     };
 
+    private const string ExternalStreetViewBaseUri =
+        "https://yandex.ru/maps?l=stv%2Csta&ll={0}%2C{1}&panorama%5Bdirection%5D={2}%2C0.000000&panorama%5Bfull%5D=true&panorama%5Bpoint%5D={3}%2C{4}&panorama%5Bspan%5D=0.000000%2C0.000000&z=100";
     public Uri GetExternalStreetViewUri(Point point)
     {
-        throw new NotImplementedException();
+        var direction = 360f * Random.Shared.NextSingle();
+        return new Uri(string.Format(ExternalStreetViewBaseUri,
+            Format(point.X), Format(point.Y), Format(direction), Format(point.X), Format(point.Y)));
     }
 
     private static Uri GetRectangularAreaUri(RectangularArea area)
