@@ -1,9 +1,11 @@
 using System.Text.Json;
+using Arklens.Next.Core;
 using Artisan.Next.Client;
 using Artisan.Next.Client.Contracts;
 using Artisan.Next.Client.Features;
 using Artisan.Next.Client.Features.Maps;
 using Artisan.Next.Client.JsInterop;
+using Bogus;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Options;
@@ -40,5 +42,14 @@ builder.Services.AddRefitClient<IBackendApi>(sp => new RefitSettings
 
 builder.Services.AddScoped<DownloadJsInterop>();
 builder.Services.ConfigureJsonOptions();
+builder.Services.AddScoped(_ => new Faker("ru"));
 
-await builder.Build().RunAsync();
+var app = builder.Build();
+
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+logger.LogInformation("Loaded {Count} AlidEntities: {List}",
+    AlidEntity.AllValues.Count,
+    AlidEntity.AllValues.OrderBy(x => x.Alid.Text).Select(x => $"\n{x.Alid.Text}"));
+
+await app.RunAsync();

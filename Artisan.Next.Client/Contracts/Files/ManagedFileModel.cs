@@ -14,5 +14,6 @@ public enum ManagedFileScope
 {
     Unknown = 0,
     Avatar = 1,
-    MinniesSheet = 2
+    MinniesSheet = 2,
+    MonsterChit = 3
 }

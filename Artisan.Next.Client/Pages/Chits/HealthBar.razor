@@ -1,0 +1,44 @@
+﻿@using Artisan.Next.Client.Contracts.Chits
+
+<div class="container-fluid p-0 mb-3">
+    <div class="row">
+        @if (Edited)
+        {
+            <div class="col-4">
+                <InputNumber class="form-control form-control-sm w-100" @bind-Value="@Model.CurrentHealth" />
+            </div>
+            <div class="col-1">
+                /
+            </div>
+            <div class="col-4">
+                <InputNumber class="form-control form-control-sm w-100" @bind-Value="@Model.MaxHealth" />
+            </div>
+            <div class="col-3">
+                (@HealthPercent%)
+            </div>
+        }
+        else
+        {
+            <div class="col-12">
+                @Model.CurrentHealth/@Model.MaxHealth (@HealthPercent%)
+            </div>
+        }
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="progress w-100">
+                <div class="progress-bar bg-success" role="progressbar" style="width: @HealthPercent%" aria-valuenow="@HealthPercent" aria-valuemin="0" aria-valuemax="100"></div>
+                <div class="progress-bar bg-danger" role="progressbar" style="width: @(100 - HealthPercent)%" aria-valuenow="@(100 - HealthPercent)" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int HealthPercent => Math.Clamp(Model.CurrentHealth * 100 / Model.MaxHealth, 0, 100);
+
+    [Parameter, EditorRequired]
+    public bool Edited { get; set; }
+    [Parameter, EditorRequired]
+    public HealthModel Model { get; set; } = null!;
+}
