@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using System.Security.Principal;
 using Artisan.Next.Client;
 using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Data;

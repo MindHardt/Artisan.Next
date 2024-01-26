@@ -1,7 +1,5 @@
 ﻿using System.Net.Mime;
-using Artisan.Next.Client.Contracts;
 using Artisan.Next.Client.Contracts.Files;
-using Artisan.Next.Handlers;
 using Artisan.Next.Handlers.Files;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
