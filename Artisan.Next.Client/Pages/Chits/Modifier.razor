@@ -1,0 +1,31 @@
+﻿<div class="col-4 text-center">
+    @if (Edited)
+    {
+        @Emoji
+        <InputNumber class="form-control form-control-sm w-100" Value="@Value" ValueChanged="@ValueChanged" ValueExpression="@(() => Value)"/>
+    }
+    else
+    {
+        <button class="btn w-100">
+            <h5>
+                <b>
+                    @Emoji 
+                    <br/>
+                    @Value.ToModifierString()
+                </b>
+            </h5>
+        </button>
+    }
+</div>
+
+
+@code {
+    [Parameter, EditorRequired]
+    public int Value { get; set; }
+    [Parameter, EditorRequired]
+    public EventCallback<int> ValueChanged { get; set; }
+    [Parameter, EditorRequired]
+    public string Emoji { get; set; } = null!;
+    [Parameter, EditorRequired]
+    public bool Edited { get; set; }
+}

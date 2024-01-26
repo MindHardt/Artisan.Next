@@ -6,6 +6,7 @@
 @using Artisan.Next.Client.JsInterop
 @using Microsoft.AspNetCore.Components.WebAssembly.Hosting
 @using Microsoft.Extensions.Options
+@using Microsoft.AspNetCore.Components.Forms
 
 @inject DownloadJsInterop Download
 @inject IOptions<JsonSerializerOptions> JsonOptions
@@ -26,7 +27,7 @@
     <div class="row mb-3">
         <InputFile id="import-json" hidden accept="application/json" OnChange="@InitiateJsonImport"/>
         <div class="btn-group col p-0 w-100">
-            <button class="btn btn-success" onclick="document.getlinkButtonById('import-json').click()">
+            <button class="btn btn-success" onclick="document.getElementById('import-json').click()">
                 <i class="bi bi-upload"></i>
                 Импорт JSON
             </button>

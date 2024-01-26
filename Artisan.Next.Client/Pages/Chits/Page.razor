@@ -3,46 +3,125 @@
 @using Artisan.Next.Client.Contracts.Chits
 @using Bogus
 @using Arklens.Next.Core
+@using Artisan.Next.Client.Contracts
+@using Artisan.Next.Client.JsInterop
+@using System.Text.Json
+@using Artisan.Next.Client.Contracts.Files
+@using Microsoft.Extensions.Options
+@using Refit
+@using System.Net.Mime
 
 @inject Faker Faker
+@inject DownloadJsInterop Download
+@inject IBackendApi Backend
+@inject IOptions<JsonSerializerOptions> JsonOptions
 
-@if (_chits is null)
-{
-    <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-}
-else
-{
-    <div class="container-fluid mw-100">
-        <div class="row flex-row flex-nowrap overflow-scroll">
-            @foreach (var chit in _chits)
-            {
-                <div class="col-3">
-                    <div class="card w-100">
-                        <img src="@chit.Model.ImageUrl" class="card-img-top" alt="...">
-                        <div class="card-body">
+<div class="btn-group btn-lg w-100">
+    <button class="btn btn-success" @onclick="ExportJson">
+        <i class="bi bi-download"></i>
+        JSON
+    </button>
+    <InputFile OnChange="@ImportJson" hidden id="import-json" accept="application/json" />
+    <button class="btn btn-success" onclick="document.getElementById('import-json').click()">
+        <i class="bi bi-upload"></i>
+        JSON
+    </button>
+    <button class="btn btn-outline-primary" @onclick="@(() => _chits.Add(new ChitModel { Model = MonsterChitModel.Fake(Faker) }))">
+        <i class="bi bi-plus"></i>
+        Добавить
+    </button>
+</div>
+<div class="container mw-100 w-100 m-0">
+    <div class="row flex-row flex-nowrap overflow-scroll">
+        @foreach (var chit in _chits)
+        {
+            <div class="col-2">
+                <div class="card w-100">
+                    <img src="@chit.Model.ImageUrl" class="card-img-top" alt="...">
+                    @if (chit.Edited)
+                    {
+                        <InputFile OnChange="@(e => UploadImage(e, chit.Model))" hidden accept="image/*" id="chit-image" />
+                        <button class="btn btn-outline-primary" onclick="document.getElementById('chit-image').click()">
+                            <i class="bi bi-image"></i>
+                        </button>
+                    }
+                    <div class="card-body">
+                        @if (chit.Edited)
+                        {
+                            <InputText class="form-control" @bind-Value="@chit.Model.Name" />
+                            <select class="form-control" @onchange="@(e => chit.Model.Alignment = Alignment.AllValues.First(x => x.Alid.Text == (string)e.Value!))">
+                                @foreach (var alignment in Alignment.AllValues)
+                                {
+                                    <option value="@alignment.Alid.Text" selected="@(chit.Model.Alignment == alignment)">
+                                        @alignment.ToDisplayString()
+                                    </option>
+                                }
+                            </select>
+                        }
+                        else
+                        {
                             <h5 class="card-title">@chit.Model.Name</h5>
                             <p class="card-text">@chit.Model.Alignment.ToDisplayString()</p>
-                            <HealthBar Model="@chit.Model.Health" Edited="@chit.Edited"/>
-                            <Modifiers Values="@GetCharacteristics(chit.Model)" Edited="@chit.Edited"/>
-                            <hr/>
-                            <Modifiers Values="@GetSaves(chit.Model)" Edited="@chit.Edited"/>
+                        }
+                        <HealthBar Model="@chit.Model.Health" Edited="@chit.Edited"/>
+                        <div class="container-fluid p-0 text-start">
+                            <div class="row">
+                                <Modifier @bind-Value="@chit.Model.Characteristics.Str" Edited="@chit.Edited" Emoji="💪" />
+                                <Modifier @bind-Value="@chit.Model.Characteristics.Dex" Edited="@chit.Edited" Emoji="🏃" />
+                                <Modifier @bind-Value="@chit.Model.Characteristics.Con" Edited="@chit.Edited" Emoji="🧡" />
+                            </div>
+                            <div class="row">
+                                <Modifier @bind-Value="@chit.Model.Characteristics.Int" Edited="@chit.Edited" Emoji="🧠" />
+                                <Modifier @bind-Value="@chit.Model.Characteristics.Wis" Edited="@chit.Edited" Emoji="🦉" />
+                                <Modifier @bind-Value="@chit.Model.Characteristics.Cha" Edited="@chit.Edited" Emoji="👄" />
+                            </div>
                         </div>
-                        <div class="card-footer text-muted">
-                            <button 
-                                class="btn @(chit.Edited ? "btn-warning" : "btn-outline-warning")" 
-                                @onclick="@(() => chit.Edited = !chit.Edited)">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            @chit.Model.Id
+                        <hr/>
+                        <div class="container-fluid p-0 text-start">
+                            <div class="row">
+                                <Modifier @bind-Value="@chit.Model.Stats.Fort" Edited="@chit.Edited" Emoji="🐂" />
+                                <Modifier @bind-Value="@chit.Model.Stats.Reac" Edited="@chit.Edited" Emoji="🐭" />
+                                <Modifier @bind-Value="@chit.Model.Stats.Will" Edited="@chit.Edited" Emoji="♾️" />
+                            </div>
+                            <div class="row">
+                                <Modifier @bind-Value="@chit.Model.Stats.Conc" Edited="@chit.Edited" Emoji="🔬" />
+                                <Modifier @bind-Value="@chit.Model.Stats.Perc" Edited="@chit.Edited" Emoji="👁️" />
+                                <Modifier @bind-Value="@chit.Model.Stats.Init" Edited="@chit.Edited" Emoji="⌛" />
+                            </div>
                         </div>
+                        <hr/>
+                        <div class="container-fluid p-0 text-start">
+                            <div class="row">
+                                <Modifier @bind-Value="@chit.Model.Defense.Primary" Edited="@chit.Edited" Emoji="⛑️" />
+                                <Modifier @bind-Value="@chit.Model.Defense.Touch" Edited="@chit.Edited" Emoji="👆" />
+                                <Modifier @bind-Value="@chit.Model.Defense.Unaware" Edited="@chit.Edited" Emoji="👀" />
+                            </div>
+                        </div>
+                        <hr/>
+                        <h5>⚔️Атаки</h5>
+                        <InputTextArea class="form-control form-control-sm" @bind-Value="@chit.Model.Attacks" readonly="@(!chit.Edited)"/>
+                        <hr/>
+                        <h5>➕Особенности</h5>
+                        <InputTextArea class="form-control form-control-sm" @bind-Value="@chit.Model.Features" readonly="@(!chit.Edited)"/>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <button 
+                            class="btn @(chit.Edited ? "btn-warning" : "btn-outline-warning")" 
+                            @onclick="@(() => chit.Edited = !chit.Edited)">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button 
+                            class="btn btn-outline-danger " 
+                            @onclick="@(() => _chits.Remove(chit))">
+                            <i class="bi bi-x"></i>
+                        </button>
+                        @chit.Model.Id
                     </div>
                 </div>
-            }
-        </div>
+            </div>
+        }
     </div>
-}
+</div>
 
 
 @code 
@@ -50,68 +129,35 @@ else
     private record ChitModel
     {
         public required MonsterChitModel Model { get; set; }
-        public bool Edited { get; set; } = false;
+        public bool Edited { get; set; }
     }
-    private ChitModel[]? _chits;
 
-    private static IEnumerable<ModifierValue> GetCharacteristics(MonsterChitModel chit) =>
-    [
-        new ModifierValue("💪", chit.Characteristics.Str),
-        new ModifierValue("🏃", chit.Characteristics.Dex),
-        new ModifierValue("💪", chit.Characteristics.Con),
-        new ModifierValue("🧠", chit.Characteristics.Int),
-        new ModifierValue("🦉", chit.Characteristics.Wis),
-        new ModifierValue("👄", chit.Characteristics.Cha)
-    ];
+    private List<ChitModel> _chits = [];
 
-    private static IEnumerable<ModifierValue> GetSaves(MonsterChitModel chit) =>
-    [
-        new ModifierValue("🐂", chit.Stats.Fort),
-        new ModifierValue("🐭", chit.Stats.Reac),
-        new ModifierValue("♾️", chit.Stats.Will),
-        new ModifierValue("🔬", chit.Stats.Conc),
-        new ModifierValue("👁️", chit.Stats.Perc),
-        new ModifierValue("⌛", chit.Stats.Init)
-    ];
-
-    protected override void OnInitialized()
+    private async Task ExportJson()
     {
-        _chits = Alignment.AllValues.OrderBy(_ => Random.Shared.Next())
-            .Select(x => new MonsterChitModel
-            {
-                Id = Guid.NewGuid().ToString(),
-                Name = Faker.Name.FirstName(),
-                Health = new HealthModel
-                {
-                    MaxHealth = Random.Shared.Next(1, 101),
-                    CurrentHealth = Random.Shared.Next(1, 101)
-                },
-                Characteristics = new CharacteristicsModel
-                {
-                    Str = Random.Shared.Next(-5, 6),
-                    Dex = Random.Shared.Next(-5, 6),
-                    Con = Random.Shared.Next(-5, 6),
-                    Int = Random.Shared.Next(-5, 6),
-                    Wis = Random.Shared.Next(-5, 6),
-                    Cha = Random.Shared.Next(-5, 6)
-                },
-                Stats = new StatsModel
-                {
-                    Fort = Random.Shared.Next(0, 11),
-                    Reac = Random.Shared.Next(0, 11),
-                    Will = Random.Shared.Next(0, 11),
-                    Conc = Random.Shared.Next(0, 11),
-                    Perc = Random.Shared.Next(0, 11),
-                    Init = Random.Shared.Next(0, 11)
-                },
-                ImageUrl = Faker.Image.LoremFlickrUrl(),
-                Alignment = x
+        var ms = new MemoryStream();
+        await JsonSerializer.SerializeAsync(ms, _chits.Select(x => x.Model).ToArray(), JsonOptions.Value);
+        ms.Seek(0, SeekOrigin.Begin);
+        await Download.DownloadAsync(ms, $"{Path.GetRandomFileName()}.json");
+    }
 
-            })
-            .Select(chit => new ChitModel
-            {
-                Model = chit
-            })
-            .ToArray();
+    private async Task ImportJson(InputFileChangeEventArgs e)
+    {
+        var contentStream = e.File.OpenReadStream();
+        var chits = await JsonSerializer.DeserializeAsync<MonsterChitModel[]>(contentStream, JsonOptions.Value);
+        _chits.AddRange(chits!.Select(x => new ChitModel { Model = x }));
+    }
+
+    private async Task UploadImage(InputFileChangeEventArgs e, MonsterChitModel chit)
+    {
+        var image = await e.File.RequestImageFileAsync("jpeg", 1024, 1024);
+        var imageStream = image.OpenReadStream(1024 * 1024 * 4);
+        var uploadedFile = await Backend.PostFile(new PostFileRequest<StreamPart>
+        {
+            File = new StreamPart(imageStream, "chit.jpg", MediaTypeNames.Image.Jpeg),
+            Scope = ManagedFileScope.MonsterChit
+        });
+        chit.ImageUrl = uploadedFile.GetPath();
     }
 }
