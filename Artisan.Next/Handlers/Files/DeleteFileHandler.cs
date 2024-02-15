@@ -3,18 +3,20 @@ using Artisan.Next.Client;
 using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Data;
 using Microsoft.EntityFrameworkCore;
+using Sqids;
 
 namespace Artisan.Next.Handlers.Files;
 
 public class DeleteFileHandler(
     ClaimsPrincipal user,
     IWebHostEnvironment hostEnvironment,
+    SqidsEncoder<int> encoder,
     DataContext dataContext)
     : IRequestHandler<DeleteFileRequest, ManagedFileModel>
 {
     public async Task<ManagedFileModel> Handle(DeleteFileRequest request, CancellationToken ct = default)
     {
-        var userId = user.GetUserId();
+        var userId = user.GetUserId()?.Populate(encoder).Value;
         var file = await dataContext.Files
             .FirstOrDefaultAsync(x => x.UniqueName == request.UniqueName, ct);
 
@@ -39,7 +41,8 @@ public class DeleteFileHandler(
             MimeType = file.MimeType,
             DateCreated = file.DateCreated,
             DateUpdated = file.DateUpdated,
-            Scope = file.Scope
+            Scope = file.Scope,
+            Hash = file.Hash
         };
     }
 }

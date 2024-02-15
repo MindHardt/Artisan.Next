@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace Artisan.Next.Data.Entities;
 
 // Add profile data for application users by adding properties to the ApplicationUser class
-public class ApplicationUser : IdentityUser<Guid>, IEntityTypeConfiguration<ApplicationUser>
+public class ApplicationUser : IdentityUser<int>, IEntityTypeConfiguration<ApplicationUser>
 {
     [MaxLength(ManagedFile.MaxUniqueNameLength)]
     public string AvatarName { get; set; } = ManagedFile.DefaultAvatarName;

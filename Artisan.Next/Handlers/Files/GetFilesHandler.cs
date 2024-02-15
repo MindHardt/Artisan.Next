@@ -3,17 +3,19 @@ using Artisan.Next.Client;
 using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Data;
 using Microsoft.EntityFrameworkCore;
+using Sqids;
 
 namespace Artisan.Next.Handlers.Files;
 
 public class GetFilesHandler(
     ClaimsPrincipal user,
+    SqidsEncoder<int> encoder,
     DataContext dataContext)
     : IRequestHandler<GetFilesRequest, IReadOnlyCollection<ManagedFileModel>>
 {
     public async Task<IReadOnlyCollection<ManagedFileModel>> Handle(GetFilesRequest request, CancellationToken ct = default)
     {
-        var userId = user.GetUserId();
+        var userId = user.GetUserId()?.Populate(encoder).Value;
         var query = dataContext.Files
             .Where(x => x.OwnerId == userId);
 
@@ -36,7 +38,8 @@ public class GetFilesHandler(
                 MimeType = x.MimeType,
                 DateCreated = x.DateCreated,
                 DateUpdated = x.DateUpdated,
-                Scope = x.Scope
+                Scope = x.Scope,
+                Hash = x.Hash
             })
             .ToListAsync(ct);
 

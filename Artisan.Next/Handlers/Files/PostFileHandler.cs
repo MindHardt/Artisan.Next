@@ -1,25 +1,33 @@
-﻿using System.Security.Claims;
+﻿using System.Runtime.Intrinsics.Arm;
+using System.Security.Claims;
+using System.Security.Cryptography;
 using Artisan.Next.Client;
 using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Data;
 using Artisan.Next.Data.Entities;
+using Sqids;
 
 namespace Artisan.Next.Handlers.Files;
 
 public class PostFileHandler(
     ClaimsPrincipal user,
     DataContext dataContext,
+    SqidsEncoder<int> encoder,
     IWebHostEnvironment hostEnvironment)
     : IRequestHandler<PostFileRequest<IFormFile>, ManagedFileModel>
 {
     public async Task<ManagedFileModel> Handle(PostFileRequest<IFormFile> request, CancellationToken ct = default)
     {
-        var userId = user.GetUserId();
+        var userId = user.GetUserId()?.Populate(encoder).Value;
         await using var data = request.File.OpenReadStream();
 
         var uniqueName = GetUniqueName(request.File.FileName);
         await using var fs = File.Create($"{hostEnvironment.WebRootPath}/files/{uniqueName}");
         await data.CopyToAsync(fs, ct);
+
+        fs.Seek(0, SeekOrigin.Begin);
+        var hash = await SHA256.HashDataAsync(fs, ct);
+        var hashString = Convert.ToHexString(hash);
 
         var now = DateTimeOffset.UtcNow;
         var file = new ManagedFile
@@ -30,7 +38,8 @@ public class PostFileHandler(
             Scope = request.Scope,
             OwnerId = userId,
             DateCreated = now,
-            DateUpdated = now
+            DateUpdated = now,
+            Hash = hashString
         };
         dataContext.Files.Add(file);
         await dataContext.SaveChangesAsync(ct);
@@ -42,7 +51,8 @@ public class PostFileHandler(
             MimeType = file.MimeType,
             DateCreated = file.DateCreated,
             DateUpdated = file.DateUpdated,
-            Scope = file.Scope
+            Scope = file.Scope,
+            Hash = hashString
         };
     }
 

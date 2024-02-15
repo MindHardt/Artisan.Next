@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using Arklens.Next.Extra;
 using Artisan.Next.Client.Contracts;
 using Artisan.Next.Client.Contracts.Files;
+using Artisan.Next.Client.Features.Sqids;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -28,10 +29,8 @@ public static class Extensions
     /// </summary>
     /// <param name="principal"></param>
     /// <returns></returns>
-    public static Guid? GetUserId(this ClaimsPrincipal? principal) =>
-        Guid.TryParse(principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value, out Guid id)
-            ? id
-            : null;
+    public static SqidId? GetUserId(this ClaimsPrincipal? principal) =>
+        principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value?.AsSqidId();
 
     public static string GetPath(this ManagedFileModel file)
         => file.UniqueName.GetManagedFilePath();

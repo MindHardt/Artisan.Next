@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Artisan.Next.Client;
 using Artisan.Next.Data;
 using Artisan.Next.Data.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -9,10 +10,8 @@ internal sealed class IdentityUserAccessor(DataContext dataContext, IdentityRedi
 {
     public async Task<ApplicationUser> GetRequiredUserAsync(HttpContext context, CancellationToken ct = default)
     {
-        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier) is { } name
-            ? Guid.Parse(name)
-            : (Guid?)null;
-        var user = userId.HasValue
+        var userId = context.User.GetUserId()?.Value;
+        var user = userId is not null
             ? await dataContext.Users.FirstOrDefaultAsync(x => x.Id == userId, ct)
             : null;
 

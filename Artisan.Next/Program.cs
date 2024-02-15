@@ -1,5 +1,6 @@
 using System.Net;
 using Artisan.Next.Client;
+using Artisan.Next.Client.Features.Sqids;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Sqids;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,9 +84,11 @@ builder.Services.AddAuthentication()
 
 builder.Services.AddScoped<IEmailSender<ApplicationUser>, MailKitEmailSender>();
 builder.Services.AddHandlers();
+builder.Services.AddSqidsEncoders();
 builder.Services.ConfigureJsonOptions();
 
 builder.Services.AddOptions<SmtpOptions>().BindConfiguration("Smtp");
+builder.Services.AddOptions<SqidsOptions>().BindConfiguration("Sqids");
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {

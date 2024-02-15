@@ -4,6 +4,7 @@ using Artisan.Next.Client;
 using Artisan.Next.Client.Contracts;
 using Artisan.Next.Client.Features;
 using Artisan.Next.Client.Features.Maps;
+using Artisan.Next.Client.Features.Sqids;
 using Artisan.Next.Client.JsInterop;
 using Bogus;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -18,10 +19,10 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
 builder.Services.AddMemoryCache();
 builder.Services.AddYandexFrames();
-builder.Services.AddSqidsEncoder(options =>
+builder.Services.AddSqidsEncoders(options =>
 {
     options.Alphabet = "abcdefghijklmnopqrstuvwxyz";
-    options.MinLength = 6;
+    options.MinLength = 8;
 });
 
 var backendUri = new Uri(builder.HostEnvironment.BaseAddress);

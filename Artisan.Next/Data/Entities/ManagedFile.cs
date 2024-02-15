@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Security.Cryptography;
 using Artisan.Next.Client.Contracts.Files;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -9,6 +10,7 @@ public class ManagedFile : IEntityTypeConfiguration<ManagedFile>
 {
     public const int MaxUniqueNameLength = 32;
     public const string DefaultAvatarName = "DefaultAvatar.jpg";
+    public const int HashLength = SHA256.HashSizeInBytes * 2;
 
     [MaxLength(MaxUniqueNameLength)]
     public required string UniqueName { get; set; }
@@ -20,10 +22,13 @@ public class ManagedFile : IEntityTypeConfiguration<ManagedFile>
     public DateTimeOffset DateCreated { get; set; }
     public DateTimeOffset DateUpdated { get; set; }
 
-    public Guid? OwnerId { get; set; }
+    public int? OwnerId { get; set; }
     public ApplicationUser? Owner { get; set; }
 
     public ManagedFileScope Scope { get; set; }
+    
+    [MinLength(HashLength), MaxLength(HashLength)]
+    public required string Hash { get; set; }
 
     public void Configure(EntityTypeBuilder<ManagedFile> builder)
     {
@@ -50,7 +55,8 @@ public class ManagedFile : IEntityTypeConfiguration<ManagedFile>
                 OriginalName = DefaultAvatarName,
                 UniqueName = DefaultAvatarName,
                 OwnerId = null,
-                Scope = ManagedFileScope.Avatar
+                Scope = ManagedFileScope.Avatar,
+                Hash = "2e51a70ff807c3368eadebd3c223e96418d90ce22093bcfbde8a087ab96227d6".ToUpper()
             }
         ]);
     }

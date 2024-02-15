@@ -8,9 +8,9 @@ namespace Artisan.Next.Data.Entities;
 public record MapArea : IEntityTypeConfiguration<MapArea>
 {
     public const int MaxNameLength = 64;
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
-    public Guid OwnerId { get; set; }
+    public int OwnerId { get; set; }
     public ApplicationUser Owner { get; set; } = null!;
 
     /// <summary>
