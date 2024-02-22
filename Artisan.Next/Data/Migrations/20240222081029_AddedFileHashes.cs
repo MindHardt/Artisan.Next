@@ -32,7 +32,7 @@ namespace Artisan.Next.Data.Migrations
 
             migrationBuilder.Sql(
                 """
-                REMOVE FROM "Files" WHERE "UniqueName" IS NOT 'DefaultAvatar.jpg';              
+                DELETE FROM "Files" WHERE "UniqueName" NOT LIKE 'DefaultAvatar.jpg';              
                 """);
 
             migrationBuilder.AddColumn<string>(
