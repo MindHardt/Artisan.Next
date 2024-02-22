@@ -36,7 +36,8 @@ public class GetFilesHandler(
                 MimeType = x.MimeType,
                 DateCreated = x.DateCreated,
                 DateUpdated = x.DateUpdated,
-                Scope = x.Scope
+                Scope = x.Scope,
+                Hash = x.Hash.Value
             })
             .ToListAsync(ct);
 

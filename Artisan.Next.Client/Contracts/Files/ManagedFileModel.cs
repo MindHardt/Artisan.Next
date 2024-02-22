@@ -8,6 +8,7 @@ public record ManagedFileModel
     public required DateTimeOffset DateCreated { get; init; }
     public required DateTimeOffset DateUpdated { get; init; }
     public required ManagedFileScope Scope { get; init; }
+    public required string Hash { get; init; }
 }
 
 public enum ManagedFileScope

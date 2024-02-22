@@ -13,9 +13,11 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.0" />
+        <PackageReference Include="MindHardt.Arklens.Next" Version="1.2.0" />
         <PackageReference Include="Refit" Version="7.0.0" />
         <PackageReference Include="Refit.HttpClientFactory" Version="7.0.0" />
         <PackageReference Include="Sqids" Version="3.1.0" />
+        <PackageReference Include="Vogen" Version="3.0.24" />
     </ItemGroup>
 
     <ItemGroup>
@@ -36,17 +38,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Arklens.Next\Arklens.Next\Arklens.Next.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Compile Update="Features\Maps\YandexMapFramesProvider.cs">
         <DependentUpon>IMapFramesProvider.cs</DependentUpon>
       </Compile>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Arklens.Next\Arklens.Next\Arklens.Next.csproj" />
     </ItemGroup>
 
     <ItemGroup>

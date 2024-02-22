@@ -39,7 +39,8 @@ public class DeleteFileHandler(
             MimeType = file.MimeType,
             DateCreated = file.DateCreated,
             DateUpdated = file.DateUpdated,
-            Scope = file.Scope
+            Scope = file.Scope,
+            Hash = file.Hash.Value
         };
     }
 }

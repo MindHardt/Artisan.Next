@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Artisan.Next.Client.Contracts.Files;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -23,7 +24,10 @@ public class ManagedFile : IEntityTypeConfiguration<ManagedFile>
     public Guid? OwnerId { get; set; }
     public ApplicationUser? Owner { get; set; }
 
-    public ManagedFileScope Scope { get; set; }
+    public required ManagedFileScope Scope { get; set; }
+    public required HashString Hash { get; set; }
+    
+    public required bool IsDefaultFile { get; set; }
 
     public void Configure(EntityTypeBuilder<ManagedFile> builder)
     {
@@ -36,11 +40,19 @@ public class ManagedFile : IEntityTypeConfiguration<ManagedFile>
         builder.Property(x => x.Scope)
             .HasMaxLength(Enum.GetValues<ManagedFileScope>().Max(x => x.ToString().Length));
 
+        var unixEpoch = new DateTimeOffset(new DateTime(1970, 1, 1), TimeSpan.Zero);
+        builder.Property(x => x.DateCreated).HasDefaultValue(unixEpoch);
+        builder.Property(x => x.DateUpdated).HasDefaultValue(unixEpoch);
+
         builder.HasOne(x => x.Owner)
             .WithMany(x => x.Files)
             .HasForeignKey(x => x.OwnerId)
             .IsRequired(false)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Property(x => x.Hash)
+            .HasConversion<HashString.EfCoreValueConverter, HashString.EfCoreValueComparer>()
+            .HasMaxLength(HashString.Length);
 
         builder.HasData(
         [
@@ -50,7 +62,9 @@ public class ManagedFile : IEntityTypeConfiguration<ManagedFile>
                 OriginalName = DefaultAvatarName,
                 UniqueName = DefaultAvatarName,
                 OwnerId = null,
-                Scope = ManagedFileScope.Avatar
+                Scope = ManagedFileScope.Avatar,
+                Hash = HashString.From("2e51a70ff807c3368eadebd3c223e96418d90ce22093bcfbde8a087ab96227d6"),
+                IsDefaultFile = true
             }
         ]);
     }

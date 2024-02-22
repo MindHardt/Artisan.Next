@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Security.Cryptography;
 using Artisan.Next.Client;
 using Artisan.Next.Client.Contracts.Files;
 using Artisan.Next.Data;
@@ -18,8 +19,12 @@ public class PostFileHandler(
         await using var data = request.File.OpenReadStream();
 
         var uniqueName = GetUniqueName(request.File.FileName);
+        
         await using var fs = File.Create($"{hostEnvironment.WebRootPath}/files/{uniqueName}");
         await data.CopyToAsync(fs, ct);
+        fs.Seek(0, SeekOrigin.Begin);
+
+        var hash = await SHA256.HashDataAsync(fs, ct);
 
         var now = DateTimeOffset.UtcNow;
         var file = new ManagedFile
@@ -30,7 +35,9 @@ public class PostFileHandler(
             Scope = request.Scope,
             OwnerId = userId,
             DateCreated = now,
-            DateUpdated = now
+            DateUpdated = now,
+            Hash = HashString.FromHash(hash),
+            IsDefaultFile = false
         };
         dataContext.Files.Add(file);
         await dataContext.SaveChangesAsync(ct);
@@ -42,7 +49,8 @@ public class PostFileHandler(
             MimeType = file.MimeType,
             DateCreated = file.DateCreated,
             DateUpdated = file.DateUpdated,
-            Scope = file.Scope
+            Scope = file.Scope,
+            Hash = file.Hash.Value
         };
     }
 

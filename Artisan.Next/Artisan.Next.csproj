@@ -39,31 +39,21 @@
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
-      <Content Remove="Logs\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Data\Migrations\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Include="wwwroot\emails\email.html">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Remove="Logs\**" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="Logs\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Remove="Logs\**" />
-    </ItemGroup>
-
+    
     <ItemGroup>
       <_ContentIncludedByDefault Remove="wwwroot\svg\minnies_big.svg" />
       <_ContentIncludedByDefault Remove="wwwroot\svg\minnies_small.svg" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Compile Update="Data\Entities\HashString.cs">
+        <DependentUpon>ManagedFile.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>
